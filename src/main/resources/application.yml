@@ -1,0 +1,16 @@
+server:
+  port: 9090
+spring:
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:mysql://localhost:3307/chobbi}
+    username: ${DATASOURCE_USERNAME:root}
+    password: ${DATASOURCE_PASSWORD:admin123}
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+  servlet:
+    multipart:
+      max-file-size: 500KB
+      max-request-size: 500KB
