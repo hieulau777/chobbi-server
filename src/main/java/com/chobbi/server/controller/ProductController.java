@@ -1,15 +1,21 @@
 package com.chobbi.server.controller;
 
+import com.chobbi.server.services.ProductServices;
+import com.chobbi.server.services.imp.ProductServicesImp;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/products")
+@RequiredArgsConstructor
 public class ProductController {
+    private final ProductServices productServices;
     @GetMapping
-    public ResponseEntity<?> getAllProducts() {
-        return ResponseEntity.ok("Hello products");
+    public ResponseEntity<?> getProduct(@RequestParam Long shopId, @RequestParam Long productId) {
+        return ResponseEntity.ok(productServices.getProduct(shopId, productId));
     }
 }
