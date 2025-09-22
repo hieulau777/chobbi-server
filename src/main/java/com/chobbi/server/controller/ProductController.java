@@ -14,8 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductServices productServices;
-    @GetMapping
+    @GetMapping(params = {"shopId", "productId"})
     public ResponseEntity<?> getProduct(@RequestParam Long shopId, @RequestParam Long productId) {
         return ResponseEntity.ok(productServices.getProduct(shopId, productId));
+    }
+    @GetMapping(params = "shopId")
+    public ResponseEntity<?> getProducts(@RequestParam Long shopId) {
+        return ResponseEntity.ok(productServices.getProducts(shopId));
     }
 }

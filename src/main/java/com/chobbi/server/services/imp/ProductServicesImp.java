@@ -2,9 +2,11 @@ package com.chobbi.server.services.imp;
 
 import com.chobbi.server.dto.*;
 import com.chobbi.server.entity.*;
+import com.chobbi.server.enums.ProductDtofieldEnums;
 import com.chobbi.server.repo.*;
 import com.chobbi.server.services.CategoryServices;
 import com.chobbi.server.services.ProductServices;
+import com.chobbi.server.utils.ProductOptionUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,84 +33,108 @@ public class ProductServicesImp implements ProductServices {
         ProductEntity product = productRepo.findByIdAndShopEntity_Id(productId, shop.getId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        // Lấy tất cả variant của product
-        List<ProductVariantEntity> variantList = productVariantRepo.findAllByProductEntity_Id(product.getId());
+        return buildProductDto(product, Set.of(
+                ProductDtofieldEnums.VARIANTS,
+                ProductDtofieldEnums.OPTIONS,
+                ProductDtofieldEnums.CATEGORIES
+        ));
+    }
 
-        // Lấy tất cả option của các variant trong 1 query
-        List<ProductVariantOptionEntity> optionList = productVariantOptionRepo
-                .findAllByProductVariantEntity_IdIn(
-                        variantList.stream().map(ProductVariantEntity::getId).toList()
-                );
+    @Override
+    public List<ProductDto> getProducts(Long shopId) {
+        // Check shop tồn tại
+        ShopEntity shop = shopRepo.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("Shop not found"));
 
-        // Map variantId -> list of optionValueIds
-        Map<Long, List<Long>> variantOptionValueIds = optionList.stream()
+        List<ProductEntity> productList = productRepo.findAllByShopEntity_Id(shop.getId());
+
+        return productList.stream()
+                .map(product -> buildProductDto(product, Set.of(ProductDtofieldEnums.VARIANTS)))
+                .toList();
+    }
+
+    // ---------------- Private methods -----------------
+
+    private ProductDto buildProductDto(ProductEntity product, Set<ProductDtofieldEnums> includeFields) {
+        ProductDto dto = new ProductDto();
+        dto.setProduct_id(product.getId());
+        dto.setName(product.getTitle());
+
+        List<ProductVariantEntity> variants = Collections.emptyList();
+        List<ProductVariantOptionEntity> options = Collections.emptyList();
+
+        // Variants
+        if (includeFields.contains(ProductDtofieldEnums.VARIANTS) || includeFields.contains(ProductDtofieldEnums.OPTIONS)) {
+            variants = productVariantRepo.findAllByProductEntity_Id(product.getId());
+            options = productVariantOptionRepo.findAllByProductVariantEntity_IdIn(
+                    variants.stream().map(ProductVariantEntity::getId).toList()
+            );
+        }
+
+        if (includeFields.contains(ProductDtofieldEnums.VARIANTS)) {
+            dto.setVariations(buildVariants(variants, options));
+        } else {
+            dto.setVariations(Collections.emptyList());
+        }
+
+        if (includeFields.contains(ProductDtofieldEnums.OPTIONS)) {
+            dto.setOptions(buildOptions(options));
+        } else {
+            dto.setOptions(Collections.emptyList());
+        }
+
+        if (includeFields.contains(ProductDtofieldEnums.CATEGORIES)) {
+            dto.setCategories(buildCategories(product.getCategoryEntity().getId()));
+        } else {
+            dto.setCategories(Collections.emptyList());
+        }
+
+        return dto;
+    }
+    private List<ProductCategoryDto> buildCategories(Long categoryId) {
+    // Gọi service để lấy breadcrumb từ leaf → root
+    return categoryServices.getBreadcrumb(categoryId);
+}
+    private List<ProductVariantDto> buildVariants(
+            List<ProductVariantEntity> variants,
+            List<ProductVariantOptionEntity> options
+    ) {
+        Map<Long, List<ProductOptionValueDto>> optionValuesGrouped =
+                ProductOptionUtils.groupOptionValues(options, true);
+
+        Map<Long, Map<Long, Integer>> optionValueIndexMap =
+                ProductOptionUtils.buildOptionValueIndexMap(optionValuesGrouped);
+
+        Map<Long, List<ProductVariantOptionEntity>> variantOptionsMap = options.stream()
                 .collect(Collectors.groupingBy(
-                        o -> o.getProductVariantEntity().getId(),
-                        Collectors.mapping(o -> o.getProductOptionValueEntity().getId(), Collectors.toList())
+                        o -> o.getProductVariantEntity().getId()
                 ));
 
-        // Map optionId -> list of ProductOptionValueDto (id + value)
-        Map<Long, List<ProductOptionValueDto>> optionValuesGrouped = optionList.stream()
-                .collect(Collectors.groupingBy(
-                        o -> o.getProductOptionValueEntity().getProductOptionEntity().getId(),
-                        Collectors.mapping(
-                                o -> new ProductOptionValueDto(
-                                        o.getProductOptionValueEntity().getId(),
-                                        o.getProductOptionValueEntity().getValue()
-                                ),
-                                Collectors.collectingAndThen(
-                                        Collectors.toList(),
-                                        list -> list.stream()
-                                                .distinct()   // loại trùng
-                                                .toList()
-                                )
-                        )
-                ));
-
-        // Map optionId -> optionName
-        Map<Long, String> optionNames = optionList.stream()
-                .map(o -> o.getProductOptionValueEntity().getProductOptionEntity())
-                .distinct()
-                .collect(Collectors.toMap(
-                        ProductOptionEntity::getId,
-                        ProductOptionEntity::getName
-                ));
-
-        // Map entity -> ProductVariantDto
-        List<ProductVariantDto> variations = variantList.stream()
+        return variants.stream()
                 .map(v -> {
                     ProductVariantDto dto = new ProductVariantDto();
                     dto.setId(v.getId());
                     dto.setSku(v.getSku());
                     dto.setPrice(v.getPrice());
                     dto.setStock(v.getStock());
-                    dto.setOption_value_ids(variantOptionValueIds.getOrDefault(v.getId(), new ArrayList<>()));
+
+                    List<ProductVariantOptionEntity> variantOptions =
+                            variantOptionsMap.getOrDefault(v.getId(), Collections.emptyList());
+
+                    List<Integer> optionIndices = new ArrayList<>();
+                    for (ProductVariantOptionEntity vo : variantOptions) {
+                        Long optionId = vo.getProductOptionValueEntity().getProductOptionEntity().getId();
+                        Long valueId = vo.getProductOptionValueEntity().getId();
+                        Integer index = optionValueIndexMap.get(optionId).get(valueId);
+                        optionIndices.add(index);
+                    }
+                    dto.setOptionIndex(optionIndices);
+
                     return dto;
-                }).toList();
-
-        // Map options (Màu sắc, Kích thước, ...)
-        List<ProductOptionDto> options = optionValuesGrouped.entrySet().stream()
-                .map(e -> {
-                    ProductOptionDto dto = new ProductOptionDto();
-                    dto.setId(e.getKey());
-                    dto.setName(optionNames.get(e.getKey()));
-                    dto.setValues(e.getValue());
-                    return dto;
-                }).toList();
-
-        // Lấy breadcrumb category
-        List<ProductCategoryDto> categories = categoryServices.getBreadcrumb(product.getCategoryEntity().getId());
-
-        // Build ProductDto
-        ProductDto productDto = new ProductDto();
-        productDto.setProduct_id(product.getId());
-        productDto.setName(product.getTitle());
-        productDto.setOptions(options);
-        productDto.setVariations(variations);
-        productDto.setCategories(categories);
-
-        return productDto;
+                })
+                .toList();
     }
-
-
+    private List<ProductOptionDto> buildOptions(List<ProductVariantOptionEntity> options) {
+        return ProductOptionUtils.buildOptionDtos(options);
+    }
 }

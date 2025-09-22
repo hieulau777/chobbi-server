@@ -22,7 +22,7 @@ import java.util.List;
 public class ProductVariantDto {
     private Long id;
     private String sku;
-    private List<Long> option_value_ids;
+    private List<Integer> optionIndex;
     private BigDecimal price;
     private Long stock;
 }
