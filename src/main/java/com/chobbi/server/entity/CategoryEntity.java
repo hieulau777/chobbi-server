@@ -12,7 +12,7 @@ public class CategoryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private Long parent_id;
+    private Long parentId;
     @OneToMany(mappedBy = "categoryEntity")
     private List<ProductEntity> productEntities;
 }

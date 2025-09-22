@@ -3,6 +3,7 @@ package com.chobbi.server.services.imp;
 import com.chobbi.server.dto.*;
 import com.chobbi.server.entity.*;
 import com.chobbi.server.repo.*;
+import com.chobbi.server.services.CategoryServices;
 import com.chobbi.server.services.ProductServices;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ public class ProductServicesImp implements ProductServices {
     private final ShopRepo shopRepo;
     private final ProductVariantRepo productVariantRepo;
     private final ProductVariantOptionRepo productVariantOptionRepo;
+    private final CategoryServices categoryServices;
 
     @Override
     public ProductDto getProduct(Long shopId, Long productId) {
@@ -94,12 +96,16 @@ public class ProductServicesImp implements ProductServices {
                     return dto;
                 }).toList();
 
+        // Lấy breadcrumb category
+        List<ProductCategoryDto> categories = categoryServices.getBreadcrumb(product.getCategoryEntity().getId());
+
         // Build ProductDto
         ProductDto productDto = new ProductDto();
         productDto.setProduct_id(product.getId());
         productDto.setName(product.getTitle());
         productDto.setOptions(options);
         productDto.setVariations(variations);
+        productDto.setCategories(categories);
 
         return productDto;
     }
