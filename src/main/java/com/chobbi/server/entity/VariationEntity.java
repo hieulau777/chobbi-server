@@ -4,11 +4,12 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@Entity(name ="product_variant")
-public class ProductVariantEntity {
+@Entity(name ="variation")
+public class VariationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,6 +25,6 @@ public class ProductVariantEntity {
     @JoinColumn(name = "product_id")
     private ProductEntity productEntity;
 
-    @OneToMany(mappedBy = "productVariantEntity")
-    private List<ProductVariantOptionEntity> productVariantOptionEntities;
+    @OneToMany(mappedBy = "variationEntity")
+    private List<VariationOptionEntity> variationOptionEntityList = new ArrayList<>();
 }

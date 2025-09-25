@@ -19,8 +19,8 @@ public class ProductServicesImp implements ProductServices {
 
     private final ProductRepo productRepo;
     private final ShopRepo shopRepo;
-    private final ProductVariantRepo productVariantRepo;
-    private final ProductVariantOptionRepo productVariantOptionRepo;
+    private final VariationRepo variationRepo;
+    private final VariationOptionRepo variationOptionRepo;
     private final CategoryServices categoryServices;
 
     @Override
@@ -49,9 +49,15 @@ public class ProductServicesImp implements ProductServices {
         List<ProductEntity> productList = productRepo.findAllByShopEntity_Id(shop.getId());
 
         return productList.stream()
-                .map(product -> buildProductDto(product, Set.of(ProductDtofieldEnums.VARIANTS)))
+                .map(product -> buildProductDto(product, Set.of(
+                        ProductDtofieldEnums.VARIANTS,
+                        ProductDtofieldEnums.OPTIONS,
+                        ProductDtofieldEnums.CATEGORIES
+                )))
                 .toList();
     }
+
+
 
     // ---------------- Private methods -----------------
 
@@ -60,14 +66,14 @@ public class ProductServicesImp implements ProductServices {
         dto.setProduct_id(product.getId());
         dto.setName(product.getTitle());
 
-        List<ProductVariantEntity> variants = Collections.emptyList();
-        List<ProductVariantOptionEntity> options = Collections.emptyList();
+        List<VariationEntity> variants = Collections.emptyList();
+        List<VariationOptionEntity> options = Collections.emptyList();
 
         // Variants
         if (includeFields.contains(ProductDtofieldEnums.VARIANTS) || includeFields.contains(ProductDtofieldEnums.OPTIONS)) {
-            variants = productVariantRepo.findAllByProductEntity_Id(product.getId());
-            options = productVariantOptionRepo.findAllByProductVariantEntity_IdIn(
-                    variants.stream().map(ProductVariantEntity::getId).toList()
+            variants = variationRepo.findAllByProductEntity_Id(product.getId());
+            options = variationOptionRepo.findAllByVariationEntity_IdIn(
+                    variants.stream().map(VariationEntity::getId).toList()
             );
         }
 
@@ -96,18 +102,18 @@ public class ProductServicesImp implements ProductServices {
     return categoryServices.getBreadcrumb(categoryId);
 }
     private List<ProductVariantDto> buildVariants(
-            List<ProductVariantEntity> variants,
-            List<ProductVariantOptionEntity> options
+            List<VariationEntity> variants,
+            List<VariationOptionEntity> options
     ) {
-        Map<Long, List<ProductOptionValueDto>> optionValuesGrouped =
-                ProductOptionUtils.groupOptionValues(options, true);
+        Map<Long, List<ProductOptionValueDto>> optionsGrouped =
+                ProductOptionUtils.groupOptions(options, true);
 
-        Map<Long, Map<Long, Integer>> optionValueIndexMap =
-                ProductOptionUtils.buildOptionValueIndexMap(optionValuesGrouped);
+        Map<Long, Map<Long, Integer>> optionsIndexMap =
+                ProductOptionUtils.buildOptionsIndexMap(optionsGrouped);
 
-        Map<Long, List<ProductVariantOptionEntity>> variantOptionsMap = options.stream()
+        Map<Long, List<VariationOptionEntity>> variantOptionsMap = options.stream()
                 .collect(Collectors.groupingBy(
-                        o -> o.getProductVariantEntity().getId()
+                        o -> o.getVariationEntity().getId()
                 ));
 
         return variants.stream()
@@ -118,14 +124,14 @@ public class ProductServicesImp implements ProductServices {
                     dto.setPrice(v.getPrice());
                     dto.setStock(v.getStock());
 
-                    List<ProductVariantOptionEntity> variantOptions =
+                    List<VariationOptionEntity> variantOptions =
                             variantOptionsMap.getOrDefault(v.getId(), Collections.emptyList());
 
                     List<Integer> optionIndices = new ArrayList<>();
-                    for (ProductVariantOptionEntity vo : variantOptions) {
-                        Long optionId = vo.getProductOptionValueEntity().getProductOptionEntity().getId();
-                        Long valueId = vo.getProductOptionValueEntity().getId();
-                        Integer index = optionValueIndexMap.get(optionId).get(valueId);
+                    for (VariationOptionEntity vo : variantOptions) {
+                        Long optionId = vo.getOptionsEntity().getTierEntity().getId();
+                        Long valueId = vo.getOptionsEntity().getId();
+                        Integer index = optionsIndexMap.get(optionId).get(valueId);
                         optionIndices.add(index);
                     }
                     dto.setOptionIndex(optionIndices);
@@ -134,7 +140,7 @@ public class ProductServicesImp implements ProductServices {
                 })
                 .toList();
     }
-    private List<ProductOptionDto> buildOptions(List<ProductVariantOptionEntity> options) {
+    private List<ProductOptionDto> buildOptions(List<VariationOptionEntity> options) {
         return ProductOptionUtils.buildOptionDtos(options);
     }
 }

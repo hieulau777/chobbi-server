@@ -3,6 +3,7 @@ package com.chobbi.server.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -14,5 +15,5 @@ public class CategoryEntity {
     private String name;
     private Long parentId;
     @OneToMany(mappedBy = "categoryEntity")
-    private List<ProductEntity> productEntities;
+    private List<ProductEntity> productEntities = new ArrayList<>();
 }

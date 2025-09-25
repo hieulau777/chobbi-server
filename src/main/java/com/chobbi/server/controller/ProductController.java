@@ -22,4 +22,8 @@ public class ProductController {
     public ResponseEntity<?> getProducts(@RequestParam Long shopId) {
         return ResponseEntity.ok(productServices.getProducts(shopId));
     }
+    @GetMapping("/hello")
+    public ResponseEntity<?> getHello() {
+        return ResponseEntity.ok("Hello World!");
+    }
 }

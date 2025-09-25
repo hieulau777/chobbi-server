@@ -17,7 +17,7 @@ public class ProductEntity {
     @JoinColumn(name = "shop_id")
     private ShopEntity shopEntity;
     @OneToMany(mappedBy = "productEntity")
-    private List<ProductVariantEntity> productVariants;
+    private List<VariationEntity> variations = new ArrayList<>();
     @ManyToOne
     @JoinColumn(name = "category_id")
     private CategoryEntity categoryEntity;
