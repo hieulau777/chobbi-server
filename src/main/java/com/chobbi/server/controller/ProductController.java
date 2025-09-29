@@ -1,13 +1,11 @@
 package com.chobbi.server.controller;
 
+import com.chobbi.server.payload.request.ProductRequest;
 import com.chobbi.server.services.ProductServices;
 import com.chobbi.server.services.imp.ProductServicesImp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/products")
@@ -22,8 +20,12 @@ public class ProductController {
     public ResponseEntity<?> getProducts(@RequestParam Long shopId) {
         return ResponseEntity.ok(productServices.getProducts(shopId));
     }
-    @GetMapping("/hello")
-    public ResponseEntity<?> getHello() {
-        return ResponseEntity.ok("Hello World!");
+    @PostMapping("/create")
+    public ResponseEntity<?> createProduct(@RequestBody ProductRequest productRequest) {
+        return ResponseEntity.ok(productServices.createProduct(productRequest));
+    }
+    @PostMapping("/update")
+    public ResponseEntity<?> updateProduct(@RequestBody ProductRequest productRequest) {
+        return ResponseEntity.ok(productServices.updateProduct(productRequest));
     }
 }

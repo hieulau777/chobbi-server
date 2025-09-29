@@ -1,7 +1,7 @@
 package com.chobbi.server.utils;
 
-import com.chobbi.server.dto.ProductOptionDto;
-import com.chobbi.server.dto.ProductOptionValueDto;
+import com.chobbi.server.dto.OptionDto;
+import com.chobbi.server.dto.TierDto;
 import com.chobbi.server.entity.TierEntity;
 import com.chobbi.server.entity.VariationOptionEntity;
 
@@ -16,7 +16,7 @@ public class ProductOptionUtils {
     /**
      * Gom các option value theo optionId
      */
-    public static Map<Long, List<ProductOptionValueDto>> groupOptions(
+    public static Map<Long, List<OptionDto>> groupOptions(
             List<VariationOptionEntity> options,
             boolean keepOrder
     ) {
@@ -25,7 +25,7 @@ public class ProductOptionUtils {
                         o -> o.getOptionsEntity().getTierEntity().getId(),
                         keepOrder ? LinkedHashMap::new : HashMap::new,
                         Collectors.mapping(
-                                o -> new ProductOptionValueDto(
+                                o -> new OptionDto(
                                         o.getOptionsEntity().getId(),
                                         o.getOptionsEntity().getName()
                                 ),
@@ -39,7 +39,7 @@ public class ProductOptionUtils {
      * Xây map: optionId -> (valueId -> index)
      */
     public static Map<Long, Map<Long, Integer>> buildOptionsIndexMap(
-            Map<Long, List<ProductOptionValueDto>> optionValuesGrouped
+            Map<Long, List<OptionDto>> optionValuesGrouped
     ) {
         Map<Long, Map<Long, Integer>> optionsIndexMap = new HashMap<>();
         optionValuesGrouped.forEach((optionId, values) -> {
@@ -55,7 +55,7 @@ public class ProductOptionUtils {
     /**
      * Lấy optionId -> optionName
      */
-    public static Map<Long, String> extractOptionNames(List<VariationOptionEntity> options) {
+    private static Map<Long, String> extractTierNames(List<VariationOptionEntity> options) {
         return options.stream()
                 .map(o -> o.getOptionsEntity().getTierEntity())
                 .distinct()
@@ -65,16 +65,16 @@ public class ProductOptionUtils {
     /**
      * Build danh sách ProductOptionDto
      */
-    public static List<ProductOptionDto> buildOptionDtos(List<VariationOptionEntity> options) {
-        Map<Long, List<ProductOptionValueDto>> optionValuesGrouped = groupOptions(options, false);
-        Map<Long, String> optionNames = extractOptionNames(options);
+    public static List<TierDto> buildListTierDto(List<VariationOptionEntity> options) {
+        Map<Long, List<OptionDto>> optionValuesGrouped = groupOptions(options, false);
+        Map<Long, String> tierNames = extractTierNames(options);
 
         return optionValuesGrouped.entrySet().stream()
                 .map(e -> {
-                    ProductOptionDto dto = new ProductOptionDto();
+                    TierDto dto = new TierDto();
                     dto.setId(e.getKey());
-                    dto.setName(optionNames.get(e.getKey()));
-                    dto.setValues(e.getValue());
+                    dto.setName(tierNames.get(e.getKey()));
+                    dto.setOptions(e.getValue());
                     return dto;
                 }).toList();
     }

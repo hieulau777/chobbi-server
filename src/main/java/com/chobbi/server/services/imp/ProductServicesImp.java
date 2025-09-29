@@ -3,12 +3,16 @@ package com.chobbi.server.services.imp;
 import com.chobbi.server.dto.*;
 import com.chobbi.server.entity.*;
 import com.chobbi.server.enums.ProductDtofieldEnums;
+import com.chobbi.server.payload.request.ProductRequest;
 import com.chobbi.server.repo.*;
 import com.chobbi.server.services.CategoryServices;
 import com.chobbi.server.services.ProductServices;
+import com.chobbi.server.services.TierServices;
+import com.chobbi.server.services.VariationServices;
 import com.chobbi.server.utils.ProductOptionUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,6 +26,8 @@ public class ProductServicesImp implements ProductServices {
     private final VariationRepo variationRepo;
     private final VariationOptionRepo variationOptionRepo;
     private final CategoryServices categoryServices;
+    private final TierServices tierServices;
+    private final VariationServices variationServices;
 
     @Override
     public ProductDto getProduct(Long shopId, Long productId) {
@@ -57,13 +63,78 @@ public class ProductServicesImp implements ProductServices {
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public ProductDto createProduct(ProductRequest request) {
+
+        ShopEntity shop = shopRepo.findById(request.getShopId())
+                .orElseThrow(() -> new RuntimeException("Shop not found"));
+
+        CategoryEntity category = categoryServices.getLeafCategoryOrThrow(request.getCategoryId());
+
+        ProductEntity product = new ProductEntity();
+        product.setTitle(request.getTitle());
+        product.setShopEntity(shop);
+        product.setCategoryEntity(category);
+        ProductEntity newProduct = productRepo.save(product);
+
+        // 1. Tạo tiers + options
+        List<List<OptionsEntity>> tierOptionsMatrix = tierServices.createOrUpdateTiers(newProduct, request.getTiers());
+
+        // 2. Tạo variations + variation_option
+        variationServices.createVariations(newProduct, request.getVariations(), tierOptionsMatrix);
+
+        // 3. Trả về dto
+        return buildProductDto(newProduct, Set.of(
+                ProductDtofieldEnums.VARIANTS,
+                ProductDtofieldEnums.OPTIONS,
+                ProductDtofieldEnums.CATEGORIES
+        ));
+    }
+
+    @Override
+    @Transactional
+    public ProductDto updateProduct(ProductRequest request) {
+        // 1. Check shop tồn tại
+        ShopEntity shop = shopRepo.findById(request.getShopId())
+                .orElseThrow(() -> new RuntimeException("Shop not found"));
+
+        // 2. Lấy product và check shop id match
+        ProductEntity product = productRepo.findById(request.getId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (!product.getShopEntity().getId().equals(shop.getId())) {
+            throw new RuntimeException("Product does not belong to this shop");
+        }
+
+        // 3. Check category leaf
+        CategoryEntity category = categoryServices.getLeafCategoryOrThrow(request.getCategoryId());
+
+        // 4. Update product
+        product.setTitle(request.getTitle());
+        product.setCategoryEntity(category);
+        productRepo.save(product);
+
+        // 5. Merge/update tiers + options
+        List<List<OptionsEntity>> tierOptionsMatrix = tierServices.createOrUpdateTiers(product, request.getTiers());
+
+        // 6. Merge/update variations + variation_option
+        variationServices.updateVariations(product, request.getVariations(), tierOptionsMatrix);
+
+        // 7. Build ProductDto để trả về
+        return buildProductDto(product, Set.of(
+                ProductDtofieldEnums.VARIANTS,
+                ProductDtofieldEnums.OPTIONS,
+                ProductDtofieldEnums.CATEGORIES
+        ));
+    }
 
 
     // ---------------- Private methods -----------------
 
     private ProductDto buildProductDto(ProductEntity product, Set<ProductDtofieldEnums> includeFields) {
         ProductDto dto = new ProductDto();
-        dto.setProduct_id(product.getId());
+        dto.setId(product.getId());
         dto.setName(product.getTitle());
 
         List<VariationEntity> variants = Collections.emptyList();
@@ -84,9 +155,9 @@ public class ProductServicesImp implements ProductServices {
         }
 
         if (includeFields.contains(ProductDtofieldEnums.OPTIONS)) {
-            dto.setOptions(buildOptions(options));
+            dto.setTiers(buildTiersDto(options));
         } else {
-            dto.setOptions(Collections.emptyList());
+            dto.setTiers(Collections.emptyList());
         }
 
         if (includeFields.contains(ProductDtofieldEnums.CATEGORIES)) {
@@ -97,28 +168,28 @@ public class ProductServicesImp implements ProductServices {
 
         return dto;
     }
-    private List<ProductCategoryDto> buildCategories(Long categoryId) {
+    private List<CategoryDto> buildCategories(Long categoryId) {
     // Gọi service để lấy breadcrumb từ leaf → root
-    return categoryServices.getBreadcrumb(categoryId);
-}
-    private List<ProductVariantDto> buildVariants(
-            List<VariationEntity> variants,
-            List<VariationOptionEntity> options
+        return categoryServices.getBreadcrumb(categoryId);
+    }
+    private List<VariationDto> buildVariants(
+            List<VariationEntity> variationEntities,
+            List<VariationOptionEntity> variationOptionEntities
     ) {
-        Map<Long, List<ProductOptionValueDto>> optionsGrouped =
-                ProductOptionUtils.groupOptions(options, true);
+        Map<Long, List<OptionDto>> optionsGrouped =
+                ProductOptionUtils.groupOptions(variationOptionEntities, true);
 
         Map<Long, Map<Long, Integer>> optionsIndexMap =
                 ProductOptionUtils.buildOptionsIndexMap(optionsGrouped);
 
-        Map<Long, List<VariationOptionEntity>> variantOptionsMap = options.stream()
+        Map<Long, List<VariationOptionEntity>> variantOptionsMap = variationOptionEntities.stream()
                 .collect(Collectors.groupingBy(
                         o -> o.getVariationEntity().getId()
                 ));
 
-        return variants.stream()
+        return variationEntities.stream()
                 .map(v -> {
-                    ProductVariantDto dto = new ProductVariantDto();
+                    VariationDto dto = new VariationDto();
                     dto.setId(v.getId());
                     dto.setSku(v.getSku());
                     dto.setPrice(v.getPrice());
@@ -134,13 +205,13 @@ public class ProductServicesImp implements ProductServices {
                         Integer index = optionsIndexMap.get(optionId).get(valueId);
                         optionIndices.add(index);
                     }
-                    dto.setOptionIndex(optionIndices);
+                    dto.setOption_indices(optionIndices);
 
                     return dto;
                 })
                 .toList();
     }
-    private List<ProductOptionDto> buildOptions(List<VariationOptionEntity> options) {
-        return ProductOptionUtils.buildOptionDtos(options);
+    private List<TierDto> buildTiersDto(List<VariationOptionEntity> options) {
+        return ProductOptionUtils.buildListTierDto(options);
     }
 }
