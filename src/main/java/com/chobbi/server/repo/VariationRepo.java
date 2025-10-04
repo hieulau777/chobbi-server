@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface VariationRepo extends JpaRepository<VariationEntity, Long> {
+    List<VariationEntity> findAllByProductEntity_IdAndDeletedAtIsNull(Long productId);
     List<VariationEntity> findAllByProductEntity_Id(Long productId);
 }

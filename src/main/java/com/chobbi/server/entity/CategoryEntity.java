@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @Entity(name = "category")
-public class CategoryEntity {
+public class CategoryEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,4 +16,5 @@ public class CategoryEntity {
     private Long parentId;
     @OneToMany(mappedBy = "categoryEntity")
     private List<ProductEntity> productEntities = new ArrayList<>();
+
 }

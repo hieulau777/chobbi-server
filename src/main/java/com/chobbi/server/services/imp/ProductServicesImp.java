@@ -28,6 +28,8 @@ public class ProductServicesImp implements ProductServices {
     private final CategoryServices categoryServices;
     private final TierServices tierServices;
     private final VariationServices variationServices;
+    private final OptionsRepo optionRepo;
+    private final TierRepo tierRepo;
 
     @Override
     public ProductDto getProduct(Long shopId, Long productId) {
@@ -36,7 +38,7 @@ public class ProductServicesImp implements ProductServices {
                 .orElseThrow(() -> new RuntimeException("Shop not found"));
 
         // Check product tồn tại
-        ProductEntity product = productRepo.findByIdAndShopEntity_Id(productId, shop.getId())
+        ProductEntity product = productRepo.findByIdAndShopEntity_IdAndDeletedAtIsNull(productId, shop.getId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
         return buildProductDto(product, Set.of(
@@ -52,7 +54,7 @@ public class ProductServicesImp implements ProductServices {
         ShopEntity shop = shopRepo.findById(shopId)
                 .orElseThrow(() -> new RuntimeException("Shop not found"));
 
-        List<ProductEntity> productList = productRepo.findAllByShopEntity_Id(shop.getId());
+        List<ProductEntity> productList = productRepo.findAllByShopEntity_IdAndDeletedAtIsNull(shop.getId());
 
         return productList.stream()
                 .map(product -> buildProductDto(product, Set.of(
@@ -129,6 +131,54 @@ public class ProductServicesImp implements ProductServices {
         ));
     }
 
+    @Override
+    public void deleteProduct(Long shopId, Long productId) {
+        // 1. Check shop tồn tại
+        ShopEntity shop = shopRepo.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("Shop not found"));
+
+        // 2. Lấy product và check shop id match
+        ProductEntity product = productRepo.findByIdAndShopEntity_IdAndDeletedAtIsNull(productId, shop.getId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (!product.getShopEntity().getId().equals(shop.getId())) {
+            throw new RuntimeException("Product does not belong to this shop");
+        }
+
+        product.softDelete();
+        productRepo.save(product);
+//
+//        // 2. Lấy variations
+//        List<VariationEntity> variations = variationRepo.findAllByProductEntity_Id(productId);
+//        variations.forEach(VariationEntity::softDelete);
+//        variationRepo.saveAll(variations);
+//
+//        // 3. Lấy variation options theo variationIds
+//        List<Long> variationIds = variations.stream().map(VariationEntity::getId).toList();
+//        List<VariationOptionEntity> variationOptions = variationOptionRepo.findAllByVariationEntity_IdIn(variationIds);
+//        variationOptions.forEach(VariationOptionEntity::softDelete);
+//        variationOptionRepo.saveAll(variationOptions);
+//
+//        // 4. Lấy optionIds từ variationOptions
+//        List<Long> optionIds = variationOptions.stream()
+//                .map(vo -> vo.getOptionsEntity().getId())
+//                .distinct()
+//                .toList();
+//        List<OptionsEntity> options = optionRepo.findAllByIdInAndDeletedAtIsNull(optionIds);
+//        options.forEach(OptionsEntity::softDelete);
+//        optionRepo.saveAll(options);
+//
+//        // 5. Lấy tierIds từ options
+//        List<Long> tierIds = options.stream()
+//                .map(o -> o.getTierEntity().getId())
+//                .distinct()
+//                .toList();
+//        List<TierEntity> tiers = tierRepo.findAllByIdInAndDeletedAtIsNull(tierIds);
+//        tiers.forEach(TierEntity::softDelete);
+//        tierRepo.saveAll(tiers);
+
+    }
+
 
     // ---------------- Private methods -----------------
 
@@ -142,7 +192,7 @@ public class ProductServicesImp implements ProductServices {
 
         // Variants
         if (includeFields.contains(ProductDtofieldEnums.VARIANTS) || includeFields.contains(ProductDtofieldEnums.OPTIONS)) {
-            variants = variationRepo.findAllByProductEntity_Id(product.getId());
+            variants = variationRepo.findAllByProductEntity_IdAndDeletedAtIsNull(product.getId());
             options = variationOptionRepo.findAllByVariationEntity_IdIn(
                     variants.stream().map(VariationEntity::getId).toList()
             );

@@ -2,10 +2,13 @@ package com.chobbi.server.entity;
 
 import jakarta.persistence.*;
         import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Data
 @Entity(name = "variation_option")
-public class VariationOptionEntity {
+public class VariationOptionEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

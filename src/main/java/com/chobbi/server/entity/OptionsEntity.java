@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Entity(name = "options")
-public class OptionsEntity {
+public class OptionsEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

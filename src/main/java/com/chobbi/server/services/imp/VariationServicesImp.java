@@ -5,6 +5,7 @@ import com.chobbi.server.entity.OptionsEntity;
 import com.chobbi.server.entity.ProductEntity;
 import com.chobbi.server.entity.VariationEntity;
 import com.chobbi.server.entity.VariationOptionEntity;
+import com.chobbi.server.repo.OptionsRepo;
 import com.chobbi.server.repo.VariationOptionRepo;
 import com.chobbi.server.repo.VariationRepo;
 import com.chobbi.server.services.VariationServices;
@@ -24,6 +25,7 @@ public class VariationServicesImp implements VariationServices {
 
     private final VariationRepo variationRepo;
     private final VariationOptionRepo variationOptionRepo;
+    private final OptionsRepo optionsRepo;
 
     /**
      * Tạo variation + variation_option
@@ -96,12 +98,15 @@ public class VariationServicesImp implements VariationServices {
         for (VariationRequestDto v : variations) {
             VariationEntity variationEntity;
             if (v.getId() != null) {
+                // Cập nhật variation
                 variationEntity = currentVariations.remove(v.getId());
                 if (variationEntity == null) throw new RuntimeException("Variation not found");
                 variationEntity.setSku(v.getSku());
                 variationEntity.setPrice(v.getPrice());
                 variationEntity.setStock(v.getStock());
+                variationEntity = variationRepo.save(variationEntity);
             } else {
+                // Tạo mới variation
                 variationEntity = new VariationEntity();
                 variationEntity.setSku(v.getSku());
                 variationEntity.setPrice(v.getPrice());
@@ -129,7 +134,10 @@ public class VariationServicesImp implements VariationServices {
             combinationSet.add(combinationKey);
 
             // Xóa variation_option cũ
-            variationOptionRepo.deleteByVariationEntity(variationEntity);
+            List<VariationOptionEntity> existingVOs = variationOptionRepo.findByVariationEntity_Id(variationEntity.getId());
+            for (VariationOptionEntity vo : existingVOs) {
+                variationOptionRepo.deleteById(vo.getId());
+            }
 
             // Tạo mới variation_option
             for (int tierIdx = 0; tierIdx < optionIndices.size(); tierIdx++) {
@@ -144,8 +152,37 @@ public class VariationServicesImp implements VariationServices {
 
         // 2. Xóa variations còn lại (không có trong request)
         for (VariationEntity v : currentVariations.values()) {
-            variationOptionRepo.deleteByVariationEntity(v);
-            variationRepo.delete(v);
+            List<VariationOptionEntity> vos = variationOptionRepo.findByVariationEntity_Id(v.getId());
+            for (VariationOptionEntity vo : vos) {
+                variationOptionRepo.deleteById(vo.getId());
+            }
+            v.softDelete();
+            variationRepo.save(v);
         }
+
+    }
+
+    @Override
+    public List<VariationEntity> softDeleteByProductId(Long productId) {
+        List<VariationEntity> variations = variationRepo.findAllByProductEntity_IdAndDeletedAtIsNull(productId);
+        List<VariationOptionEntity> variationOptions = variationOptionRepo.findAllByVariationEntity_IdIn(
+                variations.stream().map(VariationEntity::getId).toList()
+        );
+        List<OptionsEntity> options = variationOptions.stream().map(VariationOptionEntity::getOptionsEntity).toList();
+        for (VariationEntity v : variations) {
+            v.softDelete();
+            variationRepo.save(v);
+            for (VariationOptionEntity vo : variationOptions) {
+                if (vo.getVariationEntity().getId().equals(v.getId())) {
+                    vo.softDelete();
+                    variationOptionRepo.save(vo);
+                }
+            }
+        }
+        for(OptionsEntity o : options) {
+            o.softDelete();
+            optionsRepo.save(o);
+        }
+        return List.of();
     }
 }

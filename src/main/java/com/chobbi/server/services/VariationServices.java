@@ -14,4 +14,5 @@ public interface VariationServices {
                           List<List<OptionsEntity>> tierOptionsMatrix);
     void updateVariations(ProductEntity product, List<VariationRequestDto> variations,
                           List<List<OptionsEntity>> tierOptionsMatrix);
+    List<VariationEntity> softDeleteByProductId(Long productId);
 }

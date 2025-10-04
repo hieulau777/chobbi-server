@@ -1,5 +1,6 @@
 package com.chobbi.server.entity;
 
+import com.chobbi.server.enums.StatusEnums;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -9,7 +10,7 @@ import java.util.List;
 
 @Data
 @Entity(name ="variation")
-public class VariationEntity {
+public class VariationEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,4 +28,8 @@ public class VariationEntity {
 
     @OneToMany(mappedBy = "variationEntity")
     private List<VariationOptionEntity> variationOptionEntityList = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private StatusEnums status = StatusEnums.ACTIVE;
 }

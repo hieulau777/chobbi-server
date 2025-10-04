@@ -28,4 +28,8 @@ public class ProductController {
     public ResponseEntity<?> updateProduct(@RequestBody ProductRequest productRequest) {
         return ResponseEntity.ok(productServices.updateProduct(productRequest));
     }
+    @PostMapping("/delete")
+    public void deleteProduct(@RequestParam Long shopId, @RequestParam Long productId) {
+        productServices.deleteProduct(shopId, productId);
+    }
 }

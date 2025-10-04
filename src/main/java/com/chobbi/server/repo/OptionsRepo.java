@@ -8,4 +8,5 @@ import java.util.List;
 
 @Repository
 public interface OptionsRepo extends JpaRepository<OptionsEntity, Long> {
+    List<OptionsEntity> findAllByIdInAndDeletedAtIsNull(List<Long> optionIds);
 }
