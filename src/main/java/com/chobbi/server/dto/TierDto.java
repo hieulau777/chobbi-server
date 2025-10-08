@@ -10,10 +10,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductDto {
+public class TierDto {
     private Long id;
     private String name;
-    private List<TierDto> tiers = new ArrayList<>();
-    private List<VariationDto> variations = new ArrayList<>();
-    private List<CategoryDto> categories  = new ArrayList<>();
+    private List<OptionDto> options = new ArrayList<>();
 }

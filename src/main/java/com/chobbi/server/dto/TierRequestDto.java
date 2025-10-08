@@ -10,8 +10,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductOptionDto {
+public class TierRequestDto {
     private Long id;
     private String name;
-    private List<ProductOptionValueDto> values;
+    private List<OptionRequestDto> options = new ArrayList<>();
 }
