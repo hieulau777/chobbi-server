@@ -3,12 +3,18 @@ package com.chobbi.server.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 @Entity(name = "cart_variation")
-public class CartVariation extends BaseEntity {
+public class CartVariationEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private Integer quantity;
+    @Column(name = "price_at_time")
+    private BigDecimal priceAtTime;
 
     @ManyToOne
     @JoinColumn(name = "cart_id")
