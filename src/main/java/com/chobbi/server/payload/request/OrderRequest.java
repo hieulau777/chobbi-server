@@ -1,16 +1,16 @@
 package com.chobbi.server.payload.request;
 
+import com.chobbi.server.dto.OrderProductRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AddToCartRequest {
+public class OrderRequest {
     private Long accountId;
-    private Long shopId;
-    private Long productId;
-    private Long variationId;
-    private Integer quantity;
+    private List<OrderProductRequestDto> orders;
 }
