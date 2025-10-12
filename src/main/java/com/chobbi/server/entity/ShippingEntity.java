@@ -4,19 +4,16 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Data
-@Entity(name = "account")
-public class AccountEntity extends BaseEntity{
+@Entity(name = "shipping")
+public class ShippingEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String email;
     private String name;
-    private String pwd;
-    @OneToMany(mappedBy = "accountEntity")
+
+    @OneToMany(mappedBy = "shippingEntity")
     private List<OrdersEntity> ordersEntities = new ArrayList<>();
 }
