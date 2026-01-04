@@ -1,0 +1,59 @@
+{
+  "id": 1,
+  "name": "name_9a67e504330d",
+  "img_thumbnail": "/images/.jpg",
+  "img_list": [
+    {
+      "url": "/images/.jpg",
+      "sort_order": 1
+    },
+    {
+      "url": "/images/.jpg",
+      "sort_order": 2
+    }
+  ],
+  "description": "hello description",
+  "attributes": [
+    {
+      "name": "Thương hiệu",
+      "value": "NO BRAND"
+    },
+    {
+      "name": "Xuất xú",
+      "value": "China"
+    }
+  ],
+  "tiers": [
+    {
+      "id": 0,
+      "name": "name_b94af93c2224",
+      "options": [
+        {
+          "id": 0,
+          "name": "name_7bd64675c658"
+        },
+        {
+          "id": 1,
+          "name": "name_7bd64675c658"
+        }
+      ]
+    }
+  ],
+  "variations": [
+    {
+      "id": 0,
+      "sku": "sku_dde896825a7a",
+      "option_indices": [
+        0
+      ],
+      "price": 0.00,
+      "stock": 0
+    }
+  ],
+  "categories": [
+    {
+      "id": 0,
+      "name": "name_c64ae4825c73"
+    }
+  ]
+}

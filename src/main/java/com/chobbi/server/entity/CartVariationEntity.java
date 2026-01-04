@@ -1,5 +1,7 @@
 package com.chobbi.server.entity;
 
+import com.chobbi.server.catalog.entity.VariationEntity;
+import com.chobbi.server.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 

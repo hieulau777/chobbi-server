@@ -1,10 +1,8 @@
 package com.chobbi.server.entity;
 
+import com.chobbi.server.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
 @Entity(name = "roles")

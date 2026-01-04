@@ -1,6 +1,6 @@
 package com.chobbi.server.repo;
 
-import com.chobbi.server.entity.VariationOptionEntity;
+import com.chobbi.server.catalog.entity.VariationOptionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

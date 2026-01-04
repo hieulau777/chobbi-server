@@ -1,22 +1,16 @@
 package com.chobbi.server.entity;
 
+import com.chobbi.server.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 @Data
 @Entity(name = "account")
-public class AccountEntity extends BaseEntity{
+public class AccountEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String email;
     private String name;
     private String pwd;
-    @OneToMany(mappedBy = "accountEntity")
-    private List<OrdersEntity> ordersEntities = new ArrayList<>();
 }

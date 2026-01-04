@@ -1,5 +1,7 @@
 package com.chobbi.server.entity;
 
+import com.chobbi.server.catalog.entity.ProductEntity;
+import com.chobbi.server.common.BaseEntity;
 import com.chobbi.server.enums.StatusEnums;
 import jakarta.persistence.*;
 import lombok.Data;

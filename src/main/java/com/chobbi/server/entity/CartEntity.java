@@ -1,10 +1,8 @@
 package com.chobbi.server.entity;
 
+import com.chobbi.server.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @Entity(name = "cart")

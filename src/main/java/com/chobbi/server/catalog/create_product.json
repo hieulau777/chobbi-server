@@ -1,0 +1,90 @@
+{
+  "name": "T-Shirt",
+  "category_id": 1,
+  "img_list": [
+    {
+      "url": "/images/.jpg",
+      "sort_order": 1
+    },
+    {
+      "url": "/images/.jpg",
+      "sort_order": 2
+    }
+  ],
+  "description": "sfsdfsdfsdfsdf",
+  "attributes": [
+    {
+      "id": 1,
+      "value_id": 1
+    },
+    {
+      "id": 2,
+      "custom_value": "Oman"
+    }
+  ],
+  "tiers": [
+    {
+      "name": "Màu sắc",
+      "options": [
+        "Red",
+        "White"
+      ]
+    },
+    {
+      "name": "Size",
+      "options": [
+        "S",
+        "M",
+        "L"
+      ]
+    }
+  ],
+  "variations": [
+    {
+      "price": 10000,
+      "stock": 10,
+      "img": "img/.jpg",
+      "optionCombination": [
+        {
+          "tierName": "Màu sắc",
+          "optionName": "Đỏ"
+        },
+        {
+          "tierName": "Kích thước",
+          "optionName": "L"
+        }
+      ]
+    }
+  ]
+}
+
+{
+  "id": 0,
+  "title": "title_9bbf31709640",
+  "shopId": 0,
+  "categoryId": 0,
+  "variations": [
+    {
+      "id": 0,
+      "name": "name_abc19df95de1",
+      "sku": "sku_5d88e99d0cfc",
+      "price": 0.00,
+      "stock": 0,
+      "option_indices": [
+        0
+      ]
+    }
+  ],
+  "tiers": [
+    {
+      "id": 0,
+      "name": "name_1b9153ead22d",
+      "options": [
+        {
+          "id": 0,
+          "name": "name_bf0d884a7790"
+        }
+      ]
+    }
+  ]
+}
