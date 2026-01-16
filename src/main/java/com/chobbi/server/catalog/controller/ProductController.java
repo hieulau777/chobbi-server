@@ -17,14 +17,15 @@ public class ProductController {
 //    public ResponseEntity<?> getProduct(@RequestParam Long shopId, @RequestParam Long productId) {
 //        return ResponseEntity.ok(productServices.getProduct(shopId, productId));
 //    }
-//    @GetMapping(params = "shopId")
-//    public ResponseEntity<?> getProducts(@RequestParam Long shopId) {
-//        return ResponseEntity.ok(productServices.getProducts(shopId));
-//    }
+
     @PostMapping("/create")
     public ResponseEntity<?> createProduct(@RequestBody @Valid CreateProductRequest productRequest) {
         productServices.createProduct(productRequest);
         return ResponseEntity.ok("fdfdf");
+    }
+    @GetMapping(params = "productId")
+    public ResponseEntity<?> getProduct(@RequestParam Long productId) {
+        return ResponseEntity.ok("ffff");
     }
 //    @PostMapping("/update")
 //    public ResponseEntity<?> updateProduct(@RequestBody ProductRequest productRequest) {
