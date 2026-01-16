@@ -2,6 +2,7 @@ package com.chobbi.server.catalog.controller;
 
 import com.chobbi.server.catalog.dto.CreateProductRequest;
 import com.chobbi.server.catalog.services.ProductServices;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class ProductController {
 //        return ResponseEntity.ok(productServices.getProducts(shopId));
 //    }
     @PostMapping("/create")
-    public ResponseEntity<?> createProduct(@RequestBody CreateProductRequest productRequest) {
+    public ResponseEntity<?> createProduct(@RequestBody @Valid CreateProductRequest productRequest) {
         productServices.createProduct(productRequest);
         return ResponseEntity.ok("fdfdf");
     }

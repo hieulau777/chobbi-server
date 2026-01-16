@@ -17,4 +17,6 @@ public class CategoryEntity extends BaseEntity {
     private Long parentId;
     @OneToMany(mappedBy = "categoryEntity")
     private List<ProductEntity> productEntities = new ArrayList<>();
+    @OneToMany(mappedBy = "categoryEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttributesEntity> attributes = new ArrayList<>();
 }

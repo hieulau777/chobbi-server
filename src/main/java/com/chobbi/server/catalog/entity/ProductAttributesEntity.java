@@ -10,13 +10,14 @@ public class ProductAttributesEntity extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
-    private ProductEntity product;
-    @ManyToOne
-    @JoinColumn(name = "attribute_id")
-    private AttributesEntity attribute;
+    private ProductEntity productEntity;
 
     @ManyToOne
+    @JoinColumn(name = "attribute_id")
+    private AttributesEntity attributesEntity;
+
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "attribute_value_id")
-    private AttributeValuesEntity attributeValue;
+    private AttributeValuesEntity attributeValuesEntity;
 
 }

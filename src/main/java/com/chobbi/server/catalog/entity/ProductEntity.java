@@ -5,11 +5,14 @@ import com.chobbi.server.entity.ShopEntity;
 import com.chobbi.server.enums.StatusEnums;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Entity(name = "product")
 public class ProductEntity extends BaseEntity {
     @Id
@@ -33,8 +36,6 @@ public class ProductEntity extends BaseEntity {
     @OneToMany(mappedBy = "productEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TierEntity> tiers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product")
+    @OneToMany(mappedBy = "productEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductAttributesEntity> productAttributes = new ArrayList<>();
-
-
 }
