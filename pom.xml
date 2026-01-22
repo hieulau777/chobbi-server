@@ -96,6 +96,16 @@
 			<artifactId>guava</artifactId>
 			<version>33.4.0-jre</version>
 		</dependency>
+		<dependency>
+			<groupId>dev.matrixlab</groupId>
+			<artifactId>webp4j</artifactId>
+			<version>1.4.0</version> <!-- hoặc kiểm tra https://mvnrepository.com/artifact/dev.matrixlab/webp4j để lấy latest -->
+		</dependency>
+		<dependency>
+			<groupId>org.imgscalr</groupId>
+			<artifactId>imgscalr-lib</artifactId>
+			<version>4.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>

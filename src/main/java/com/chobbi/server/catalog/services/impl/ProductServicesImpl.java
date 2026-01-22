@@ -4,13 +4,16 @@ import com.chobbi.server.catalog.domain.AttributesRule;
 import com.chobbi.server.catalog.dto.*;
 import com.chobbi.server.catalog.entity.*;
 import com.chobbi.server.catalog.enums.AttributeTypesEnums;
+import com.chobbi.server.catalog.repo.*;
 import com.chobbi.server.catalog.services.CategoryServices;
 import com.chobbi.server.catalog.services.ProductServices;
 import com.chobbi.server.entity.ShopEntity;
-import com.chobbi.server.repo.*;
+import com.chobbi.server.storage.FolderTypeEnum;
+import com.chobbi.server.storage.services.FilesStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -26,6 +29,7 @@ public class ProductServicesImpl implements ProductServices {
     private final CategoryServices categoryServices;
     private final AttributesRepo attributesRepo;
     private final AttributeValuesRepo attributeValuesRepo;
+    private final FilesStorageService filesStorageService;
     private final VariationRepo variationRepo;
     private final VariationOptionRepo variationOptionRepo;
     private final OptionsRepo optionRepo;
@@ -33,9 +37,8 @@ public class ProductServicesImpl implements ProductServices {
 
     @Override
     @Transactional
-    public void createProduct(CreateProductRequest req) {
+    public void createProduct(CreateProductRequest req, MultipartFile[] media) {
 
-//
         ShopEntity shopEntity = shopRepo.findById(req.getShopId())
                 .orElseThrow(() -> new RuntimeException("Shop not found"));
 
@@ -45,6 +48,77 @@ public class ProductServicesImpl implements ProductServices {
         product.setShopEntity(shopEntity);
         product.setCategoryEntity(categoryEntity);
         product.setDescription(req.getDescription());
+
+        // validate image upload
+        List<CreateProductImages> reqProductImages = req.getImages();
+        List<CreateProductOptionImages> reqOptionImages = req.getOptionImages() != null ?
+                req.getOptionImages() : Collections.emptyList();
+        if (!reqOptionImages.isEmpty() && (req.getTiers() == null || req.getTiers().isEmpty())) {
+            throw new RuntimeException("Không thể gửi ảnh tùy chọn (optionImages) khi sản phẩm không có phân loại (tiers).");
+        }
+
+        Set<String> reqImageNames = new HashSet<>();
+        for (CreateProductImages item : reqProductImages) {
+            if (!reqImageNames.add(item.getName())) {
+                throw new RuntimeException("Duplicate image name: " + item.getName());
+            }
+        }
+
+        Set<String> imgOptionNames = new HashSet<>();
+        for (CreateProductOptionImages item : reqOptionImages) {
+            if (!reqImageNames.add(item.getImageName())) {
+                throw new RuntimeException("Duplicate image name: " + item.getImageName());
+            }
+            if (!imgOptionNames.add(item.getOptionName().toLowerCase(Locale.ROOT))) {
+                throw new RuntimeException("Duplicate option name: " + item.getOptionName());
+            }
+        }
+        Set<String> optionNames = new HashSet<>();
+        if (req.getTiers() != null && !req.getTiers().isEmpty()) {
+            for (CreateProductTierDto tier : req.getTiers()) {
+                if (tier.getHasImages()) {
+                    for (String opt : tier.getOptions()) {
+                        optionNames.add(opt.toLowerCase(Locale.ROOT));
+                    }
+                }
+            }
+        }
+        if (!imgOptionNames.containsAll(optionNames)) {
+            throw new RuntimeException("Option images option name do not belong to has images tier option names:");
+        }
+
+        Map<String, MultipartFile> mapImages = new HashMap<>();
+        for (MultipartFile item : media) {
+            String fileName = item.getOriginalFilename();
+            if (mapImages.containsKey(fileName)) {
+                throw new RuntimeException("Duplicate image name in upload: " + fileName);
+            }
+            mapImages.put(fileName, item);
+        }
+
+        List<ProductImagesEntity> productImagesEntities = reqProductImages
+                .parallelStream()
+                .map(item -> {
+            String name = item.getName();
+            MultipartFile file = mapImages.get(name);
+
+            String savedImgPath = filesStorageService.transferStorage(file, FolderTypeEnum.PRODUCTS);
+
+            ProductImagesEntity entity = new ProductImagesEntity();
+            entity.setPath(savedImgPath);
+            entity.setSortOrder(item.getOrder());
+            entity.setProductEntity(product);
+
+            return entity;
+        }).toList();
+
+        productImagesEntities.forEach(entity -> {
+            product.getProductImages().add(entity);
+
+            if (entity.getSortOrder() == 1) {
+                product.setThumbnail(entity.getPath());
+            }
+        });
 
         // validate attributes
         // rule map
@@ -251,6 +325,7 @@ public class ProductServicesImpl implements ProductServices {
                     tierValidationResult.getCountCartesian()
             );
             // Add tiers + options from tiers request
+            Map<String, OptionsEntity> mapOptionsEntities = new HashMap<>();
             for (Map.Entry<String, Set<String>> entry : normalizeTierOptionMap.entrySet()) {
                 TierEntity tierEntity = new TierEntity();
                 tierEntity.setName(entry.getKey());
@@ -260,9 +335,24 @@ public class ProductServicesImpl implements ProductServices {
                     OptionsEntity optionEntity = new OptionsEntity();
                     optionEntity.setName(option);
                     optionEntity.setTierEntity(tierEntity);
+                    String tierOptionComb = tierEntity.getName() + ":" + optionEntity.getName();
+                    mapOptionsEntities.put(tierOptionComb, optionEntity);
                     tierEntity.getOptions().add(optionEntity);
                 }
             }
+
+            // save option image
+            reqOptionImages
+                    .parallelStream()
+                    .forEach(item -> {
+                        String tierOptionName = item.getTierName().toLowerCase() + ":" + item.getOptionName().toLowerCase();
+                        String imgName = item.getImageName();
+                        OptionsEntity optionEntity = mapOptionsEntities.get(tierOptionName);
+                        MultipartFile file = mapImages.get(imgName);
+                        String savedImgPath = filesStorageService.transferStorage(file, FolderTypeEnum.PRODUCTS);
+                        optionEntity.setImgPath(savedImgPath);
+                    });
+
             // Add variations and variation_option for variation_request
             for (CreateProductVariationDto reqVariation : reqVariations) {
                 VariationEntity variationEntity = new VariationEntity();

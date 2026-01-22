@@ -2,7 +2,7 @@ package com.chobbi.server.catalog.services.impl;
 
 import com.chobbi.server.catalog.entity.CategoryEntity;
 import com.chobbi.server.catalog.services.CategoryServices;
-import com.chobbi.server.repo.CategoryRepo;
+import com.chobbi.server.catalog.repo.CategoryRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

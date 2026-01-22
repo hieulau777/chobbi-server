@@ -19,15 +19,16 @@ public class CreateProductRequest {
     private String name;
     private String description;
     private Long categoryId;
-    private String imgCover;
-    private List<String> imgList;
+    @Size(min = 1, max = 9)
+    private List<CreateProductImages> images;
     @NotEmpty
     @Valid
     private List<CreateProductAttributeDto> attributes;
     @Valid
     @Size(min = 1, max = 2)
     private List<CreateProductTierDto> tiers;
+    private List<CreateProductOptionImages> optionImages;
     @Valid
-    @Size(min = 1)
+    @Size(min = 1, max = 50)
     private List<CreateProductVariationDto> variations;
 }

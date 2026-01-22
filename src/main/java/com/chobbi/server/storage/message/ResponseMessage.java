@@ -1,4 +1,4 @@
-package com.chobbi.server.files.message;
+package com.chobbi.server.storage.message;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -14,6 +14,8 @@ public class OptionsEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    @Column(name = "img_path")
+    private String imgPath;
     @ManyToOne
     @JoinColumn(name = "tier_id")
     private TierEntity tierEntity;

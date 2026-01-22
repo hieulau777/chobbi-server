@@ -1,4 +1,4 @@
-package com.chobbi.server.repo;
+package com.chobbi.server.catalog.repo;
 
 import com.chobbi.server.catalog.entity.ProductEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -3,44 +3,57 @@
   "shopId": 1,
   "categoryId": 3,
   "description": "dfdfdf",
+  "images": [
+    {
+      "name": "IMG_3932.PNG",
+      "order": 1
+    },
+    {
+      "name": "IMG_3828.JPG",
+      "order": 2
+    }
+  ],
   "attributes": [
     {
       "id": 1,
-      "valueIds": [
-        1
-      ]
+      "valueIds": [1]
     },
     {
       "id": 2,
-      "valueIds": [
-        5
-      ]
+      "valueIds": [5]
     },
     {
       "id": 3,
-      "valueIds": [
-        10, 11
-      ],
-      "customValues": [
-        "Cotton Custom",
-        "Linen Custom"
-      ]
+      "valueIds": [10, 11],
+      "customValues": ["Cotton Custom", "Linen Custom"]
     },
     {
       "id": 4,
-      "customValues": [
-        "2026-01-06"
-      ]
+      "customValues": ["2026-01-06"]
     }
   ],
   "tiers": [
     {
       "name": "Màu sắc",
-      "options": ["Trắng", "Đỏ"]
+      "options": ["Trắng", "Đỏ"],
+      "hasImages": true
     },
     {
       "name": "Kích thước",
-      "options": ["S", "M", "L"]
+      "options": ["S", "M", "L"],
+      "hasImages": false
+    }
+  ],
+  "optionImages": [
+    {
+      "tierName": "Màu sắc",
+      "optionName": "Trắng",
+      "imageName": "IMG_3824.JPG"
+    },
+    {
+      "tierName": "Màu sắc",
+      "optionName": "Đỏ",
+      "imageName": "IMG_3825.JPG"
     }
   ],
   "variations": [
@@ -49,8 +62,14 @@
       "stock": 10,
       "img": "img/trang-s.jpg",
       "optionCombination": [
-        { "tierName": "Màu sắc", "optionName": "Trắng" },
-        { "tierName": "Kích thước", "optionName": "S" }
+        {
+          "tierName": "Màu sắc",
+          "optionName": "Trắng"
+        },
+        {
+          "tierName": "Kích thước",
+          "optionName": "S"
+        }
       ]
     },
     {
@@ -58,8 +77,14 @@
       "stock": 10,
       "img": "img/trang-m.jpg",
       "optionCombination": [
-        { "tierName": "Màu sắc", "optionName": "Trắng" },
-        { "tierName": "Kích thước", "optionName": "M" }
+        {
+          "tierName": "Màu sắc",
+          "optionName": "Trắng"
+        },
+        {
+          "tierName": "Kích thước",
+          "optionName": "M"
+        }
       ]
     },
     {
@@ -67,8 +92,14 @@
       "stock": 10,
       "img": "img/trang-l.jpg",
       "optionCombination": [
-        { "tierName": "Màu sắc", "optionName": "Trắng" },
-        { "tierName": "Kích thước", "optionName": "L" }
+        {
+          "tierName": "Màu sắc",
+          "optionName": "Trắng"
+        },
+        {
+          "tierName": "Kích thước",
+          "optionName": "L"
+        }
       ]
     },
     {
@@ -76,8 +107,14 @@
       "stock": 10,
       "img": "img/do-s.jpg",
       "optionCombination": [
-        { "tierName": "Màu sắc", "optionName": "Đỏ" },
-        { "tierName": "Kích thước", "optionName": "S" }
+        {
+          "tierName": "Màu sắc",
+          "optionName": "Đỏ"
+        },
+        {
+          "tierName": "Kích thước",
+          "optionName": "S"
+        }
       ]
     },
     {
@@ -85,8 +122,14 @@
       "stock": 10,
       "img": "img/do-m.jpg",
       "optionCombination": [
-        { "tierName": "Màu sắc", "optionName": "Đỏ" },
-        { "tierName": "Kích thước", "optionName": "M" }
+        {
+          "tierName": "Màu sắc",
+          "optionName": "Đỏ"
+        },
+        {
+          "tierName": "Kích thước",
+          "optionName": "M"
+        }
       ]
     },
     {
@@ -94,8 +137,14 @@
       "stock": 10,
       "img": "img/do-l.jpg",
       "optionCombination": [
-        { "tierName": "Màu sắc", "optionName": "Đỏ" },
-        { "tierName": "Kích thước", "optionName": "L" }
+        {
+          "tierName": "Màu sắc",
+          "optionName": "Đỏ"
+        },
+        {
+          "tierName": "Kích thước",
+          "optionName": "L"
+        }
       ]
     }
   ]

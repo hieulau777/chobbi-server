@@ -4,8 +4,10 @@ import com.chobbi.server.catalog.dto.CreateProductRequest;
 import com.chobbi.server.catalog.services.ProductServices;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/product")
@@ -18,10 +20,16 @@ public class ProductController {
 //        return ResponseEntity.ok(productServices.getProduct(shopId, productId));
 //    }
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createProduct(@RequestBody @Valid CreateProductRequest productRequest) {
-        productServices.createProduct(productRequest);
-        return ResponseEntity.ok("fdfdf");
+    @PostMapping(
+            value = "/create",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<?> createProduct(
+            @RequestPart("product") @Valid CreateProductRequest productRequest,
+            @RequestPart(value = "images", required = false) MultipartFile[] media
+    ) {
+        productServices.createProduct(productRequest, media);
+        return ResponseEntity.ok("ok");
     }
     @GetMapping(params = "productId")
     public ResponseEntity<?> getProduct(@RequestParam Long productId) {
