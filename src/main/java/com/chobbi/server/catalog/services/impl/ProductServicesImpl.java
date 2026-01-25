@@ -34,6 +34,7 @@ public class ProductServicesImpl implements ProductServices {
     private final VariationOptionRepo variationOptionRepo;
     private final OptionsRepo optionRepo;
     private final TierRepo tierRepo;
+    private final CategoryRepo categoryRepo;
 
     @Override
     @Transactional
@@ -383,6 +384,113 @@ public class ProductServicesImpl implements ProductServices {
 
         productRepo.save(product);
     }
+
+    @Override
+    public ReadProductDto readProduct(Long productId) {
+        ProductEntity product = productRepo.findByIdAndDeletedAtIsNull(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        ReadProductDto dto = new ReadProductDto();
+        dto.setProductId(product.getId());
+        dto.setProductName(product.getName());
+        dto.setDescription(product.getDescription());
+
+        dto.setImages(product.getProductImages().stream()
+                .map(img -> new ReadProductImageDto(img.getPath(), img.getSortOrder()))
+                .toList());
+
+        List<ReadProductTierDto> tierDtos = new ArrayList<>();
+        List<ReadProductOptionImagesDto> optionImageDtos = new ArrayList<>();
+
+        for (TierEntity tier : product.getTiers()) {
+            ReadProductTierDto tierDto = new ReadProductTierDto();
+            tierDto.setId(tier.getId());
+            tierDto.setName(tier.getName());
+
+            boolean hasImages = tier.getOptions().stream().anyMatch(opt -> opt.getImgPath() != null);
+            tierDto.setHasImages(hasImages);
+
+            List<ReadProductTierOptionDto> optionDtos = tier.getOptions().stream()
+                    .map(opt -> {
+                        if (opt.getImgPath() != null) {
+                            optionImageDtos.add(new ReadProductOptionImagesDto(tier.getId(), opt.getId(), opt.getImgPath()));
+                        }
+                        return new ReadProductTierOptionDto(opt.getId(), opt.getName());
+                    })
+                    .toList();
+
+            tierDto.setOptions(optionDtos);
+            tierDtos.add(tierDto);
+        }
+        dto.setTiers(tierDtos);
+        dto.setOptionImages(optionImageDtos);
+
+        dto.setVariations(product.getVariations().stream()
+                .map(v -> {
+                    ReadProductVariationDto vDto = new ReadProductVariationDto();
+                    vDto.setPrice(v.getPrice());
+                    vDto.setStock(v.getStock());
+
+                    List<ReadProductVariationOptionDto> combinations = v.getVariationOptions().stream()
+                            .map(vo -> new ReadProductVariationOptionDto(
+                                    vo.getOptionsEntity().getTierEntity().getId(),
+                                    vo.getOptionsEntity().getId()))
+                            .toList();
+
+                    vDto.setOptionCombination(combinations);
+                    return vDto;
+                })
+                .toList());
+
+        Set<Long> productValueIds = product.getProductAttributes().stream()
+                .map(pa -> pa.getAttributeValuesEntity().getId())
+                .collect(Collectors.toSet());
+
+        List<ReadProductAttributes> attributeDefinitions = product.getCategoryEntity().getAttributes().stream()
+                .map(attr -> {
+                    List<ReadProductAttributeValueDto> valueDtos = attr.getAttributeValues().stream()
+                            .filter(val -> !val.getIsCustom() || productValueIds.contains(val.getId()))
+                            .map(val -> {
+                                String displayValue = switch (attr.getType()) {
+                                    case TEXT -> val.getValueText();
+                                    case NUMBER -> String.valueOf(val.getValueNumber());
+                                    case BOOLEAN -> String.valueOf(val.getValueBoolean());
+                                    case DATE -> String.valueOf(val.getValueDate());
+                                };
+                                return new ReadProductAttributeValueDto(val.getId(), displayValue);
+                            })
+                            .toList();
+
+                    return new ReadProductAttributes(
+                            attr.getId(),
+                            attr.getName(),
+                            attr.getIsRequired(),
+                            attr.getIsCustomAllow(),
+                            attr.getIsMultipleAllow(),
+                            attr.getType().name(),
+                            valueDtos
+                    );
+                })
+                .toList();
+        dto.setAttributes(attributeDefinitions);
+
+        Map<Long, List<Long>> selectedMap = product.getProductAttributes().stream()
+                .collect(Collectors.groupingBy(
+                        pa -> pa.getAttributesEntity().getId(),
+                        Collectors.mapping(pa -> pa.getAttributeValuesEntity().getId(), Collectors.toList())
+                ));
+
+        dto.setSelectedAttributes(selectedMap.entrySet().stream()
+                .map(entry -> new ReadProductSelectedAttributes(entry.getKey(), entry.getValue()))
+                .toList());
+
+
+        dto.setSelectedCategoryId(product.getCategoryEntity().getId());
+        dto.setCategoryTree(categoryServices.getTree());
+
+        return dto;
+    }
+
 
     private static CreateProductVariationDto validateNoTiers(CreateProductRequest req) {
         List<CreateProductVariationDto> reqVariations = req.getVariations();

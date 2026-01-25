@@ -16,8 +16,8 @@ public class ProductController {
     private final ProductServices productServices;
 
 //    @GetMapping(params = {"shopId", "productId"})
-//    public ResponseEntity<?> getProduct(@RequestParam Long shopId, @RequestParam Long productId) {
-//        return ResponseEntity.ok(productServices.getProduct(shopId, productId));
+//    public ResponseEntity<?> readProduct(@RequestParam Long shopId, @RequestParam Long productId) {
+//        return ResponseEntity.ok(productServices.readProduct(shopId, productId));
 //    }
 
     @PostMapping(
@@ -32,8 +32,9 @@ public class ProductController {
         return ResponseEntity.ok("ok");
     }
     @GetMapping(params = "productId")
-    public ResponseEntity<?> getProduct(@RequestParam Long productId) {
-        return ResponseEntity.ok("ffff");
+    public ResponseEntity<?> readProduct(@RequestParam Long productId) {
+        ;
+        return ResponseEntity.ok(productServices.readProduct(productId));
     }
 //    @PostMapping("/update")
 //    public ResponseEntity<?> updateProduct(@RequestBody ProductRequest productRequest) {

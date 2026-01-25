@@ -61,6 +61,7 @@ src/
               domain/
                 AttributesRule.java
               dto/
+                CategoryDto.java
                 CreateProductAttributeDto.java
                 CreateProductImages.java
                 CreateProductOptionImages.java
@@ -68,7 +69,18 @@ src/
                 CreateProductRequestOptionCombination.java
                 CreateProductTierDto.java
                 CreateProductVariationDto.java
+                ReadProductAttributes.java
+                ReadProductAttributeValueDto.java
+                ReadProductDto.java
+                ReadProductImageDto.java
+                ReadProductOptionImagesDto.java
+                ReadProductSelectedAttributes.java
+                ReadProductTierDto.java
+                ReadProductTierOptionDto.java
+                ReadProductVariationDto.java
+                ReadProductVariationOptionDto.java
                 TierValidationResult.java
+                UpdateProductRequest.java
               entity/
                 AttributesEntity.java
                 AttributeValuesEntity.java
@@ -176,6 +188,279 @@ Files
 ================================================================
 
 ================
+File: src/main/java/com/chobbi/server/catalog/dto/CategoryDto.java
+================
+package com.chobbi.server.catalog.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CategoryDto {
+    private Long id;
+    private String name;
+    private List<CategoryDto> children = new ArrayList<>();
+    public CategoryDto(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/dto/ReadProductAttributes.java
+================
+package com.chobbi.server.catalog.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ReadProductAttributes {
+    private Long id;
+    private String name;
+    private Boolean isRequired;
+    private Boolean isCustomAllow;
+    private Boolean isMultipleAllow;
+    private String type;
+    private List<ReadProductAttributeValueDto> values;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/dto/ReadProductAttributeValueDto.java
+================
+package com.chobbi.server.catalog.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ReadProductAttributeValueDto {
+    private Long id;
+    private String value;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/dto/ReadProductDto.java
+================
+package com.chobbi.server.catalog.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ReadProductDto {
+    private Long productId;
+    private String productName;
+    private String description;
+    private List<ReadProductImageDto> images;
+    private List<ReadProductTierDto> tiers;
+    private List<ReadProductOptionImagesDto> optionImages;
+    private List<ReadProductAttributes> attributes;
+    private List<ReadProductSelectedAttributes> selectedAttributes;
+    private List<CategoryDto> categoryTree;
+    private Long selectedCategoryId;
+    private List<ReadProductVariationDto> variations;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/dto/ReadProductImageDto.java
+================
+package com.chobbi.server.catalog.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ReadProductImageDto {
+    private String url;
+    private Integer sort;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/dto/ReadProductOptionImagesDto.java
+================
+package com.chobbi.server.catalog.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ReadProductOptionImagesDto {
+    private Long tierId;
+    private Long optionId;
+    private String url;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/dto/ReadProductSelectedAttributes.java
+================
+package com.chobbi.server.catalog.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ReadProductSelectedAttributes {
+    private Long id;
+    private List<Long> selectedValueIds;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/dto/ReadProductTierDto.java
+================
+package com.chobbi.server.catalog.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ReadProductTierDto {
+    private Long id;
+    private String name;
+    private List<ReadProductTierOptionDto> options;
+    private Boolean hasImages;
+
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/dto/ReadProductTierOptionDto.java
+================
+package com.chobbi.server.catalog.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ReadProductTierOptionDto {
+    private Long id;
+    private String name;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/dto/ReadProductVariationDto.java
+================
+package com.chobbi.server.catalog.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ReadProductVariationDto {
+    private BigDecimal price;
+    private Integer stock;
+    private List<ReadProductVariationOptionDto> optionCombination;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/dto/ReadProductVariationOptionDto.java
+================
+package com.chobbi.server.catalog.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ReadProductVariationOptionDto {
+    private Long tierId;
+    private Long optionId;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/dto/UpdateProductRequest.java
+================
+package com.chobbi.server.catalog.dto;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class UpdateProductRequest {
+    @NotNull
+    private Long shopId;
+    @NotNull
+    private Long productId;
+    private Long categoryId;
+    
+
+}
+
+================
+File: .mvn/wrapper/maven-wrapper.properties
+================
+wrapperVersion=3.3.4
+distributionType=only-script
+distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.11/apache-maven-3.9.11-bin.zip
+
+================
+File: src/main/java/com/chobbi/server/catalog/domain/AttributesRule.java
+================
+package com.chobbi.server.catalog.domain;
+
+import com.chobbi.server.catalog.enums.AttributeTypesEnums;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class AttributesRule {
+    private boolean required;
+    private boolean multipleAllow;
+    private boolean customAllow;
+    private AttributeTypesEnums type;
+}
+
+================
 File: src/main/java/com/chobbi/server/catalog/dto/CreateProductImages.java
 ================
 package com.chobbi.server.catalog.dto;
@@ -215,6 +500,47 @@ public class CreateProductOptionImages {
 }
 
 ================
+File: src/main/java/com/chobbi/server/catalog/dto/CreateProductRequestOptionCombination.java
+================
+package com.chobbi.server.catalog.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CreateProductRequestOptionCombination {
+    @NotBlank
+    private String tierName;
+    @NotBlank
+    private String optionName;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/dto/TierValidationResult.java
+================
+package com.chobbi.server.catalog.dto;
+
+import lombok.Getter;
+
+import java.util.Map;
+import java.util.Set;
+
+@Getter
+public class TierValidationResult {
+    private final Map<String, Set<String>> normalizedTierOptions;
+    private final int countCartesian;
+
+    public TierValidationResult(Map<String, Set<String>> normalizedTierOptions, int countCartesian) {
+        this.normalizedTierOptions = normalizedTierOptions;
+        this.countCartesian = countCartesian;
+    }
+}
+
+================
 File: src/main/java/com/chobbi/server/catalog/entity/ProductImagesEntity.java
 ================
 package com.chobbi.server.catalog.entity;
@@ -238,6 +564,113 @@ public class ProductImagesEntity extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private ProductEntity productEntity;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/entity/TierEntity.java
+================
+package com.chobbi.server.catalog.entity;
+
+import com.chobbi.server.common.BaseEntity;
+import jakarta.persistence.*;
+import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@Entity(name = "tier")
+public class TierEntity extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    @OneToMany(mappedBy = "tierEntity", cascade = CascadeType.ALL)
+    private List<OptionsEntity> options = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private ProductEntity productEntity;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/entity/VariationEntity.java
+================
+package com.chobbi.server.catalog.entity;
+
+import com.chobbi.server.common.BaseEntity;
+import com.chobbi.server.enums.StatusEnums;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@Setter
+@Entity(name ="variation")
+public class VariationEntity extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // private String sku;
+    private BigDecimal price;
+
+    @Column(name = "price_discount")
+    private BigDecimal priceDiscount;
+    private Integer stock;
+    //private Long weight;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private ProductEntity productEntity;
+
+    @OneToMany(mappedBy = "variationEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<VariationOptionEntity> variationOptions = new ArrayList<>();
+
+//    @Enumerated(EnumType.STRING)
+//    @Column(nullable = false, length = 20)
+//    private StatusEnums status = StatusEnums.ACTIVE;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/entity/VariationOptionEntity.java
+================
+package com.chobbi.server.catalog.entity;
+
+import com.chobbi.server.common.BaseEntity;
+import jakarta.persistence.*;
+        import lombok.Data;
+
+@Data
+@Entity(name = "variation_option")
+public class VariationOptionEntity extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "variation_id")
+    private VariationEntity variationEntity;
+
+    @ManyToOne
+    @JoinColumn(name = "option_id")
+    private OptionsEntity optionsEntity;
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/enums/AttributeTypesEnums.java
+================
+package com.chobbi.server.catalog.enums;
+
+public enum AttributeTypesEnums {
+    TEXT,
+    NUMBER,
+    BOOLEAN,
+    DATE
 }
 
 ================
@@ -301,9 +734,23 @@ package com.chobbi.server.catalog.repo;
 
 import com.chobbi.server.catalog.entity.CategoryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface CategoryRepo extends JpaRepository<CategoryEntity, Long> {
-    boolean existsByParentId(Long parentId);
+    List<CategoryEntity> findAllByDeletedAtIsNull();
+
+    boolean existsByParentId(Long id);
+
+    // Query đệ quy để lấy chính nó và tất cả các con cháu bên dưới
+    @Query(value = "WITH RECURSIVE cat_tree AS (" +
+            "SELECT * FROM category WHERE id = :id " +
+            "UNION ALL " +
+            "SELECT c.* FROM category c INNER JOIN cat_tree ct ON c.parent_id = ct.id) " +
+            "SELECT * FROM cat_tree", nativeQuery = true)
+    List<CategoryEntity> findAllDescendants(@Param("id") Long id);
 }
 
 ================
@@ -407,6 +854,645 @@ public interface VariationRepo extends JpaRepository<VariationEntity, Long> {
     List<VariationEntity> findAllByProductEntity_IdAndDeletedAtIsNull(Long productId);
     List<VariationEntity> findAllByProductEntity_Id(Long productId);
     Optional<VariationEntity> findByIdAndDeletedAtIsNull(Long variationId);
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/services/CategoryServices.java
+================
+package com.chobbi.server.catalog.services;
+
+import com.chobbi.server.catalog.dto.CategoryDto;
+import com.chobbi.server.catalog.entity.CategoryEntity;
+
+import java.util.List;
+
+public interface CategoryServices {
+    // Overloading 1: Lấy toàn bộ cây
+    List<CategoryDto> getTree();
+
+    // Overloading 2: Lấy cây của một nhánh nhất định
+    List<CategoryDto> getTree(Long categoryId);
+
+    // Kiểm tra Leaf node và ném lỗi với message tùy chỉnh
+    CategoryEntity getLeafCategoryOrThrow(Long categoryId);
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/cart.json
+================
+
+
+================
+File: src/main/java/com/chobbi/server/catalog/product-detail-buyer.json
+================
+{
+  "id": 1,
+  "name": "name_9a67e504330d",
+  "img_thumbnail": "/images/.jpg",
+  "img_list": [
+    {
+      "url": "/images/.jpg",
+      "sort_order": 1
+    },
+    {
+      "url": "/images/.jpg",
+      "sort_order": 2
+    }
+  ],
+  "description": "hello description",
+  "attributes": [
+    {
+      "name": "Thương hiệu",
+      "value": "NO BRAND"
+    },
+    {
+      "name": "Xuất xú",
+      "value": "China"
+    }
+  ],
+  "tiers": [
+    {
+      "id": 0,
+      "name": "name_b94af93c2224",
+      "options": [
+        {
+          "id": 0,
+          "name": "name_7bd64675c658"
+        },
+        {
+          "id": 1,
+          "name": "name_7bd64675c658"
+        }
+      ]
+    }
+  ],
+  "variations": [
+    {
+      "id": 0,
+      "sku": "sku_dde896825a7a",
+      "option_indices": [
+        0
+      ],
+      "price": 0.00,
+      "stock": 0
+    }
+  ],
+  "categories": [
+    {
+      "id": 0,
+      "name": "name_c64ae4825c73"
+    }
+  ]
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/product-update-seller.json
+================
+{
+  "id": 1,
+  "name": "name_9a67e504330d",
+  "img_thumbnail": "/images/.jpg",
+  "img_list": [
+    {
+      "url": "/images/.jpg",
+      "sort_order": 1
+    },
+    {
+      "url": "/images/.jpg",
+      "sort_order": 2
+    }
+  ],
+  "description": "hello description",
+  "attributes": [
+    {
+      "name": "Thương hiệu",
+      "value": "NO BRAND"
+    },
+    {
+      "name": "Xuất xú",
+      "value": "China"
+    }
+  ],
+  "tiers": [
+    {
+      "id": 0,
+      "name": "name_b94af93c2224",
+      "options": [
+        {
+          "id": 0,
+          "name": "name_7bd64675c658"
+        },
+        {
+          "id": 1,
+          "name": "name_7bd64675c658"
+        }
+      ]
+    }
+  ],
+  "variations": [
+    {
+      "id": 0,
+      "sku": "sku_dde896825a7a",
+      "option_indices": [
+        0
+      ],
+      "price": 0.00,
+      "stock": 0
+    }
+  ],
+  "categories": [
+    {
+      "id": 0,
+      "name": "name_c64ae4825c73"
+    }
+  ]
+}
+
+================
+File: src/main/java/com/chobbi/server/common/BaseEntity.java
+================
+package com.chobbi.server.common;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@MappedSuperclass
+public abstract class BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return this.deletedAt != null;
+    }
+}
+
+================
+File: src/main/java/com/chobbi/server/config/SecurityConfig.java
+================
+package com.chobbi.server.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(req -> {
+                    req.anyRequest().permitAll();
+                })
+                .build();
+    }
+}
+
+================
+File: src/main/java/com/chobbi/server/controller/AuthenticationController.java
+================
+package com.chobbi.server.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/auth")
+public class AuthenticationController {
+    @PostMapping("/register")
+    public ResponseEntity<?> register() {
+
+        return ResponseEntity.ok("Register endpoint");
+    }
+}
+
+================
+File: src/main/java/com/chobbi/server/controller/CheckoutController.java
+================
+package com.chobbi.server.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/checkout")
+@RequiredArgsConstructor
+public class CheckoutController {
+    @GetMapping
+    public String checkout() {
+        return "Checkout endpoint";
+    }
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/cart/CartAddResponseDto.java
+================
+package com.chobbi.server.dto.cart;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CartAddResponseDto {
+    private Long shopId;
+    private Long productId;
+    private BigDecimal priceUnit;
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/cart/CartProductDto.java
+================
+package com.chobbi.server.dto.cart;
+
+import com.chobbi.server.dto.TierDto;
+import com.chobbi.server.dto.VariationDto;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CartProductDto {
+    private Long productId;
+    private String productName;
+    private Integer quantity;
+    private Long selected_variation_id;
+    private BigDecimal price_unit;
+    private List<TierDto> tiers = new ArrayList<>();
+    private List<VariationDto> variations = new ArrayList<>();
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/cart/CartResponseDto.java
+================
+package com.chobbi.server.dto.cart;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CartResponseDto {
+    private Long accountId;
+    private List<CartShopDto> shops;
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/cart/CartShopDto.java
+================
+package com.chobbi.server.dto.cart;
+
+import com.chobbi.server.dto.TierDto;
+import com.chobbi.server.dto.VariationDto;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CartShopDto {
+    private Long shopId;
+    private String shopName;
+    private List<CartProductDto> product;
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/CategoryDto.java
+================
+package com.chobbi.server.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CategoryDto {
+    private Long id;
+    private String name;
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/OptionDto.java
+================
+package com.chobbi.server.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class OptionDto {
+    private Long id;
+    private String name;
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/OptionRequestDto.java
+================
+package com.chobbi.server.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class OptionRequestDto {
+    private Long id;
+    private String name;
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/ProductVariationDto.java
+================
+package com.chobbi.server.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ProductVariationDto {
+    private Long productId;
+    private Long productName;
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/TierDto.java
+================
+package com.chobbi.server.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class TierDto {
+    private Long id;
+    private String name;
+    private List<OptionDto> options = new ArrayList<>();
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/TierRequestDto.java
+================
+package com.chobbi.server.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class TierRequestDto {
+    private Long id;
+    private String name;
+    private List<OptionRequestDto> options = new ArrayList<>();
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/VariationDto.java
+================
+package com.chobbi.server.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+//      "id": 1001,
+//              "sku": "TS-RED-M",
+//              "option_value_ids": [
+//              101,
+//              201
+//              ],
+//              "price": 150000,
+//              "stock": 10
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class VariationDto {
+    private Long id;
+    private String sku;
+    private List<Integer> option_indices = new ArrayList<>();
+    private BigDecimal price;
+    private Long stock;
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/VariationQuantityDto.java
+================
+package com.chobbi.server.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class VariationQuantityDto {
+    private Long variationId;
+    private Long variationName;
+    private BigDecimal price;
+    private BigDecimal priceDiscount;
+    private Integer stock;
+    private Integer quantity;
+}
+
+================
+File: src/main/java/com/chobbi/server/dto/VariationRequestDto.java
+================
+package com.chobbi.server.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class VariationRequestDto {
+    private Long id;
+    private String name;
+    private String sku;
+    private BigDecimal price;
+    private Long stock;
+    private List<Integer> option_indices = new ArrayList<>();
+}
+
+================
+File: src/main/java/com/chobbi/server/entity/AccountRolesEntity.java
+================
+package com.chobbi.server.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Data
+@Entity(name = "account_roles")
+public class AccountRolesEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private AccountEntity accountEntity;
+
+    @ManyToOne
+    @JoinColumn(name = "roles_id")
+    private RolesEntity rolesEntity;
+}
+
+================
+File: src/main/java/com/chobbi/server/enums/ProductDtofieldEnums.java
+================
+package com.chobbi.server.enums;
+
+public enum ProductDtofieldEnums {
+    OPTIONS,
+    VARIANTS,
+    CATEGORIES
+}
+
+================
+File: src/main/java/com/chobbi/server/exception/BusinessException.java
+================
+package com.chobbi.server.exception;
+
+import org.springframework.http.HttpStatus;
+
+public class BusinessException extends RuntimeException {
+    private final HttpStatus status;
+
+    public BusinessException(String message, HttpStatus status) {
+        super(message);
+        this.status = status;
+    }
+
+    public HttpStatus getStatus() {
+        return status;
+    }
+}
+
+================
+File: src/main/java/com/chobbi/server/exception/GlobalExceptionHandler.java
+================
+package com.chobbi.server.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", ex.getStatus().value());
+        body.put("error", ex.getStatus().getReasonPhrase());
+        body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, ex.getStatus());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        body.put("error", "Internal Server Error");
+        body.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
 
 ================
@@ -693,6 +1779,575 @@ public enum FolderTypeEnum {
         this.folderName = folderName;
     }
 }
+
+================
+File: src/main/java/com/chobbi/server/ServerApplication.java
+================
+package com.chobbi.server;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class ServerApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(ServerApplication.class, args);
+	}
+
+}
+
+================
+File: src/test/java/com/chobbi/server/ServerApplicationTests.java
+================
+package com.chobbi.server;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class ServerApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
+
+================
+File: .gitattributes
+================
+/mvnw text eol=lf
+*.cmd text eol=crlf
+
+================
+File: .gitignore
+================
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+================
+File: mvnw
+================
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# Apache Maven Wrapper startup batch script, version 3.3.4
+#
+# Optional ENV vars
+# -----------------
+#   JAVA_HOME - location of a JDK home dir, required when download maven via java source
+#   MVNW_REPOURL - repo url base for downloading maven distribution
+#   MVNW_USERNAME/MVNW_PASSWORD - user and password for downloading maven
+#   MVNW_VERBOSE - true: enable verbose log; debug: trace the mvnw script; others: silence the output
+# ----------------------------------------------------------------------------
+
+set -euf
+[ "${MVNW_VERBOSE-}" != debug ] || set -x
+
+# OS specific support.
+native_path() { printf %s\\n "$1"; }
+case "$(uname)" in
+CYGWIN* | MINGW*)
+  [ -z "${JAVA_HOME-}" ] || JAVA_HOME="$(cygpath --unix "$JAVA_HOME")"
+  native_path() { cygpath --path --windows "$1"; }
+  ;;
+esac
+
+# set JAVACMD and JAVACCMD
+set_java_home() {
+  # For Cygwin and MinGW, ensure paths are in Unix format before anything is touched
+  if [ -n "${JAVA_HOME-}" ]; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ]; then
+      # IBM's JDK on AIX uses strange locations for the executables
+      JAVACMD="$JAVA_HOME/jre/sh/java"
+      JAVACCMD="$JAVA_HOME/jre/sh/javac"
+    else
+      JAVACMD="$JAVA_HOME/bin/java"
+      JAVACCMD="$JAVA_HOME/bin/javac"
+
+      if [ ! -x "$JAVACMD" ] || [ ! -x "$JAVACCMD" ]; then
+        echo "The JAVA_HOME environment variable is not defined correctly, so mvnw cannot run." >&2
+        echo "JAVA_HOME is set to \"$JAVA_HOME\", but \"\$JAVA_HOME/bin/java\" or \"\$JAVA_HOME/bin/javac\" does not exist." >&2
+        return 1
+      fi
+    fi
+  else
+    JAVACMD="$(
+      'set' +e
+      'unset' -f command 2>/dev/null
+      'command' -v java
+    )" || :
+    JAVACCMD="$(
+      'set' +e
+      'unset' -f command 2>/dev/null
+      'command' -v javac
+    )" || :
+
+    if [ ! -x "${JAVACMD-}" ] || [ ! -x "${JAVACCMD-}" ]; then
+      echo "The java/javac command does not exist in PATH nor is JAVA_HOME set, so mvnw cannot run." >&2
+      return 1
+    fi
+  fi
+}
+
+# hash string like Java String::hashCode
+hash_string() {
+  str="${1:-}" h=0
+  while [ -n "$str" ]; do
+    char="${str%"${str#?}"}"
+    h=$(((h * 31 + $(LC_CTYPE=C printf %d "'$char")) % 4294967296))
+    str="${str#?}"
+  done
+  printf %x\\n $h
+}
+
+verbose() { :; }
+[ "${MVNW_VERBOSE-}" != true ] || verbose() { printf %s\\n "${1-}"; }
+
+die() {
+  printf %s\\n "$1" >&2
+  exit 1
+}
+
+trim() {
+  # MWRAPPER-139:
+  #   Trims trailing and leading whitespace, carriage returns, tabs, and linefeeds.
+  #   Needed for removing poorly interpreted newline sequences when running in more
+  #   exotic environments such as mingw bash on Windows.
+  printf "%s" "${1}" | tr -d '[:space:]'
+}
+
+scriptDir="$(dirname "$0")"
+scriptName="$(basename "$0")"
+
+# parse distributionUrl and optional distributionSha256Sum, requires .mvn/wrapper/maven-wrapper.properties
+while IFS="=" read -r key value; do
+  case "${key-}" in
+  distributionUrl) distributionUrl=$(trim "${value-}") ;;
+  distributionSha256Sum) distributionSha256Sum=$(trim "${value-}") ;;
+  esac
+done <"$scriptDir/.mvn/wrapper/maven-wrapper.properties"
+[ -n "${distributionUrl-}" ] || die "cannot read distributionUrl property in $scriptDir/.mvn/wrapper/maven-wrapper.properties"
+
+case "${distributionUrl##*/}" in
+maven-mvnd-*bin.*)
+  MVN_CMD=mvnd.sh _MVNW_REPO_PATTERN=/maven/mvnd/
+  case "${PROCESSOR_ARCHITECTURE-}${PROCESSOR_ARCHITEW6432-}:$(uname -a)" in
+  *AMD64:CYGWIN* | *AMD64:MINGW*) distributionPlatform=windows-amd64 ;;
+  :Darwin*x86_64) distributionPlatform=darwin-amd64 ;;
+  :Darwin*arm64) distributionPlatform=darwin-aarch64 ;;
+  :Linux*x86_64*) distributionPlatform=linux-amd64 ;;
+  *)
+    echo "Cannot detect native platform for mvnd on $(uname)-$(uname -m), use pure java version" >&2
+    distributionPlatform=linux-amd64
+    ;;
+  esac
+  distributionUrl="${distributionUrl%-bin.*}-$distributionPlatform.zip"
+  ;;
+maven-mvnd-*) MVN_CMD=mvnd.sh _MVNW_REPO_PATTERN=/maven/mvnd/ ;;
+*) MVN_CMD="mvn${scriptName#mvnw}" _MVNW_REPO_PATTERN=/org/apache/maven/ ;;
+esac
+
+# apply MVNW_REPOURL and calculate MAVEN_HOME
+# maven home pattern: ~/.m2/wrapper/dists/{apache-maven-<version>,maven-mvnd-<version>-<platform>}/<hash>
+[ -z "${MVNW_REPOURL-}" ] || distributionUrl="$MVNW_REPOURL$_MVNW_REPO_PATTERN${distributionUrl#*"$_MVNW_REPO_PATTERN"}"
+distributionUrlName="${distributionUrl##*/}"
+distributionUrlNameMain="${distributionUrlName%.*}"
+distributionUrlNameMain="${distributionUrlNameMain%-bin}"
+MAVEN_USER_HOME="${MAVEN_USER_HOME:-${HOME}/.m2}"
+MAVEN_HOME="${MAVEN_USER_HOME}/wrapper/dists/${distributionUrlNameMain-}/$(hash_string "$distributionUrl")"
+
+exec_maven() {
+  unset MVNW_VERBOSE MVNW_USERNAME MVNW_PASSWORD MVNW_REPOURL || :
+  exec "$MAVEN_HOME/bin/$MVN_CMD" "$@" || die "cannot exec $MAVEN_HOME/bin/$MVN_CMD"
+}
+
+if [ -d "$MAVEN_HOME" ]; then
+  verbose "found existing MAVEN_HOME at $MAVEN_HOME"
+  exec_maven "$@"
+fi
+
+case "${distributionUrl-}" in
+*?-bin.zip | *?maven-mvnd-?*-?*.zip) ;;
+*) die "distributionUrl is not valid, must match *-bin.zip or maven-mvnd-*.zip, but found '${distributionUrl-}'" ;;
+esac
+
+# prepare tmp dir
+if TMP_DOWNLOAD_DIR="$(mktemp -d)" && [ -d "$TMP_DOWNLOAD_DIR" ]; then
+  clean() { rm -rf -- "$TMP_DOWNLOAD_DIR"; }
+  trap clean HUP INT TERM EXIT
+else
+  die "cannot create temp dir"
+fi
+
+mkdir -p -- "${MAVEN_HOME%/*}"
+
+# Download and Install Apache Maven
+verbose "Couldn't find MAVEN_HOME, downloading and installing it ..."
+verbose "Downloading from: $distributionUrl"
+verbose "Downloading to: $TMP_DOWNLOAD_DIR/$distributionUrlName"
+
+# select .zip or .tar.gz
+if ! command -v unzip >/dev/null; then
+  distributionUrl="${distributionUrl%.zip}.tar.gz"
+  distributionUrlName="${distributionUrl##*/}"
+fi
+
+# verbose opt
+__MVNW_QUIET_WGET=--quiet __MVNW_QUIET_CURL=--silent __MVNW_QUIET_UNZIP=-q __MVNW_QUIET_TAR=''
+[ "${MVNW_VERBOSE-}" != true ] || __MVNW_QUIET_WGET='' __MVNW_QUIET_CURL='' __MVNW_QUIET_UNZIP='' __MVNW_QUIET_TAR=v
+
+# normalize http auth
+case "${MVNW_PASSWORD:+has-password}" in
+'') MVNW_USERNAME='' MVNW_PASSWORD='' ;;
+has-password) [ -n "${MVNW_USERNAME-}" ] || MVNW_USERNAME='' MVNW_PASSWORD='' ;;
+esac
+
+if [ -z "${MVNW_USERNAME-}" ] && command -v wget >/dev/null; then
+  verbose "Found wget ... using wget"
+  wget ${__MVNW_QUIET_WGET:+"$__MVNW_QUIET_WGET"} "$distributionUrl" -O "$TMP_DOWNLOAD_DIR/$distributionUrlName" || die "wget: Failed to fetch $distributionUrl"
+elif [ -z "${MVNW_USERNAME-}" ] && command -v curl >/dev/null; then
+  verbose "Found curl ... using curl"
+  curl ${__MVNW_QUIET_CURL:+"$__MVNW_QUIET_CURL"} -f -L -o "$TMP_DOWNLOAD_DIR/$distributionUrlName" "$distributionUrl" || die "curl: Failed to fetch $distributionUrl"
+elif set_java_home; then
+  verbose "Falling back to use Java to download"
+  javaSource="$TMP_DOWNLOAD_DIR/Downloader.java"
+  targetZip="$TMP_DOWNLOAD_DIR/$distributionUrlName"
+  cat >"$javaSource" <<-END
+	public class Downloader extends java.net.Authenticator
+	{
+	  protected java.net.PasswordAuthentication getPasswordAuthentication()
+	  {
+	    return new java.net.PasswordAuthentication( System.getenv( "MVNW_USERNAME" ), System.getenv( "MVNW_PASSWORD" ).toCharArray() );
+	  }
+	  public static void main( String[] args ) throws Exception
+	  {
+	    setDefault( new Downloader() );
+	    java.nio.file.Files.copy( java.net.URI.create( args[0] ).toURL().openStream(), java.nio.file.Paths.get( args[1] ).toAbsolutePath().normalize() );
+	  }
+	}
+	END
+  # For Cygwin/MinGW, switch paths to Windows format before running javac and java
+  verbose " - Compiling Downloader.java ..."
+  "$(native_path "$JAVACCMD")" "$(native_path "$javaSource")" || die "Failed to compile Downloader.java"
+  verbose " - Running Downloader.java ..."
+  "$(native_path "$JAVACMD")" -cp "$(native_path "$TMP_DOWNLOAD_DIR")" Downloader "$distributionUrl" "$(native_path "$targetZip")"
+fi
+
+# If specified, validate the SHA-256 sum of the Maven distribution zip file
+if [ -n "${distributionSha256Sum-}" ]; then
+  distributionSha256Result=false
+  if [ "$MVN_CMD" = mvnd.sh ]; then
+    echo "Checksum validation is not supported for maven-mvnd." >&2
+    echo "Please disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties." >&2
+    exit 1
+  elif command -v sha256sum >/dev/null; then
+    if echo "$distributionSha256Sum  $TMP_DOWNLOAD_DIR/$distributionUrlName" | sha256sum -c - >/dev/null 2>&1; then
+      distributionSha256Result=true
+    fi
+  elif command -v shasum >/dev/null; then
+    if echo "$distributionSha256Sum  $TMP_DOWNLOAD_DIR/$distributionUrlName" | shasum -a 256 -c >/dev/null 2>&1; then
+      distributionSha256Result=true
+    fi
+  else
+    echo "Checksum validation was requested but neither 'sha256sum' or 'shasum' are available." >&2
+    echo "Please install either command, or disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties." >&2
+    exit 1
+  fi
+  if [ $distributionSha256Result = false ]; then
+    echo "Error: Failed to validate Maven distribution SHA-256, your Maven distribution might be compromised." >&2
+    echo "If you updated your Maven version, you need to update the specified distributionSha256Sum property." >&2
+    exit 1
+  fi
+fi
+
+# unzip and move
+if command -v unzip >/dev/null; then
+  unzip ${__MVNW_QUIET_UNZIP:+"$__MVNW_QUIET_UNZIP"} "$TMP_DOWNLOAD_DIR/$distributionUrlName" -d "$TMP_DOWNLOAD_DIR" || die "failed to unzip"
+else
+  tar xzf${__MVNW_QUIET_TAR:+"$__MVNW_QUIET_TAR"} "$TMP_DOWNLOAD_DIR/$distributionUrlName" -C "$TMP_DOWNLOAD_DIR" || die "failed to untar"
+fi
+
+# Find the actual extracted directory name (handles snapshots where filename != directory name)
+actualDistributionDir=""
+
+# First try the expected directory name (for regular distributions)
+if [ -d "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain" ]; then
+  if [ -f "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain/bin/$MVN_CMD" ]; then
+    actualDistributionDir="$distributionUrlNameMain"
+  fi
+fi
+
+# If not found, search for any directory with the Maven executable (for snapshots)
+if [ -z "$actualDistributionDir" ]; then
+  # enable globbing to iterate over items
+  set +f
+  for dir in "$TMP_DOWNLOAD_DIR"/*; do
+    if [ -d "$dir" ]; then
+      if [ -f "$dir/bin/$MVN_CMD" ]; then
+        actualDistributionDir="$(basename "$dir")"
+        break
+      fi
+    fi
+  done
+  set -f
+fi
+
+if [ -z "$actualDistributionDir" ]; then
+  verbose "Contents of $TMP_DOWNLOAD_DIR:"
+  verbose "$(ls -la "$TMP_DOWNLOAD_DIR")"
+  die "Could not find Maven distribution directory in extracted archive"
+fi
+
+verbose "Found extracted Maven distribution directory: $actualDistributionDir"
+printf %s\\n "$distributionUrl" >"$TMP_DOWNLOAD_DIR/$actualDistributionDir/mvnw.url"
+mv -- "$TMP_DOWNLOAD_DIR/$actualDistributionDir" "$MAVEN_HOME" || [ -d "$MAVEN_HOME" ] || die "fail to move MAVEN_HOME"
+
+clean || :
+exec_maven "$@"
+
+================
+File: mvnw.cmd
+================
+<# : batch portion
+@REM ----------------------------------------------------------------------------
+@REM Licensed to the Apache Software Foundation (ASF) under one
+@REM or more contributor license agreements.  See the NOTICE file
+@REM distributed with this work for additional information
+@REM regarding copyright ownership.  The ASF licenses this file
+@REM to you under the Apache License, Version 2.0 (the
+@REM "License"); you may not use this file except in compliance
+@REM with the License.  You may obtain a copy of the License at
+@REM
+@REM    http://www.apache.org/licenses/LICENSE-2.0
+@REM
+@REM Unless required by applicable law or agreed to in writing,
+@REM software distributed under the License is distributed on an
+@REM "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+@REM KIND, either express or implied.  See the License for the
+@REM specific language governing permissions and limitations
+@REM under the License.
+@REM ----------------------------------------------------------------------------
+
+@REM ----------------------------------------------------------------------------
+@REM Apache Maven Wrapper startup batch script, version 3.3.4
+@REM
+@REM Optional ENV vars
+@REM   MVNW_REPOURL - repo url base for downloading maven distribution
+@REM   MVNW_USERNAME/MVNW_PASSWORD - user and password for downloading maven
+@REM   MVNW_VERBOSE - true: enable verbose log; others: silence the output
+@REM ----------------------------------------------------------------------------
+
+@IF "%__MVNW_ARG0_NAME__%"=="" (SET __MVNW_ARG0_NAME__=%~nx0)
+@SET __MVNW_CMD__=
+@SET __MVNW_ERROR__=
+@SET __MVNW_PSMODULEP_SAVE=%PSModulePath%
+@SET PSModulePath=
+@FOR /F "usebackq tokens=1* delims==" %%A IN (`powershell -noprofile "& {$scriptDir='%~dp0'; $script='%__MVNW_ARG0_NAME__%'; icm -ScriptBlock ([Scriptblock]::Create((Get-Content -Raw '%~f0'))) -NoNewScope}"`) DO @(
+  IF "%%A"=="MVN_CMD" (set __MVNW_CMD__=%%B) ELSE IF "%%B"=="" (echo %%A) ELSE (echo %%A=%%B)
+)
+@SET PSModulePath=%__MVNW_PSMODULEP_SAVE%
+@SET __MVNW_PSMODULEP_SAVE=
+@SET __MVNW_ARG0_NAME__=
+@SET MVNW_USERNAME=
+@SET MVNW_PASSWORD=
+@IF NOT "%__MVNW_CMD__%"=="" ("%__MVNW_CMD__%" %*)
+@echo Cannot start maven from wrapper >&2 && exit /b 1
+@GOTO :EOF
+: end batch / begin powershell #>
+
+$ErrorActionPreference = "Stop"
+if ($env:MVNW_VERBOSE -eq "true") {
+  $VerbosePreference = "Continue"
+}
+
+# calculate distributionUrl, requires .mvn/wrapper/maven-wrapper.properties
+$distributionUrl = (Get-Content -Raw "$scriptDir/.mvn/wrapper/maven-wrapper.properties" | ConvertFrom-StringData).distributionUrl
+if (!$distributionUrl) {
+  Write-Error "cannot read distributionUrl property in $scriptDir/.mvn/wrapper/maven-wrapper.properties"
+}
+
+switch -wildcard -casesensitive ( $($distributionUrl -replace '^.*/','') ) {
+  "maven-mvnd-*" {
+    $USE_MVND = $true
+    $distributionUrl = $distributionUrl -replace '-bin\.[^.]*$',"-windows-amd64.zip"
+    $MVN_CMD = "mvnd.cmd"
+    break
+  }
+  default {
+    $USE_MVND = $false
+    $MVN_CMD = $script -replace '^mvnw','mvn'
+    break
+  }
+}
+
+# apply MVNW_REPOURL and calculate MAVEN_HOME
+# maven home pattern: ~/.m2/wrapper/dists/{apache-maven-<version>,maven-mvnd-<version>-<platform>}/<hash>
+if ($env:MVNW_REPOURL) {
+  $MVNW_REPO_PATTERN = if ($USE_MVND -eq $False) { "/org/apache/maven/" } else { "/maven/mvnd/" }
+  $distributionUrl = "$env:MVNW_REPOURL$MVNW_REPO_PATTERN$($distributionUrl -replace "^.*$MVNW_REPO_PATTERN",'')"
+}
+$distributionUrlName = $distributionUrl -replace '^.*/',''
+$distributionUrlNameMain = $distributionUrlName -replace '\.[^.]*$','' -replace '-bin$',''
+
+$MAVEN_M2_PATH = "$HOME/.m2"
+if ($env:MAVEN_USER_HOME) {
+  $MAVEN_M2_PATH = "$env:MAVEN_USER_HOME"
+}
+
+if (-not (Test-Path -Path $MAVEN_M2_PATH)) {
+    New-Item -Path $MAVEN_M2_PATH -ItemType Directory | Out-Null
+}
+
+$MAVEN_WRAPPER_DISTS = $null
+if ((Get-Item $MAVEN_M2_PATH).Target[0] -eq $null) {
+  $MAVEN_WRAPPER_DISTS = "$MAVEN_M2_PATH/wrapper/dists"
+} else {
+  $MAVEN_WRAPPER_DISTS = (Get-Item $MAVEN_M2_PATH).Target[0] + "/wrapper/dists"
+}
+
+$MAVEN_HOME_PARENT = "$MAVEN_WRAPPER_DISTS/$distributionUrlNameMain"
+$MAVEN_HOME_NAME = ([System.Security.Cryptography.SHA256]::Create().ComputeHash([byte[]][char[]]$distributionUrl) | ForEach-Object {$_.ToString("x2")}) -join ''
+$MAVEN_HOME = "$MAVEN_HOME_PARENT/$MAVEN_HOME_NAME"
+
+if (Test-Path -Path "$MAVEN_HOME" -PathType Container) {
+  Write-Verbose "found existing MAVEN_HOME at $MAVEN_HOME"
+  Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
+  exit $?
+}
+
+if (! $distributionUrlNameMain -or ($distributionUrlName -eq $distributionUrlNameMain)) {
+  Write-Error "distributionUrl is not valid, must end with *-bin.zip, but found $distributionUrl"
+}
+
+# prepare tmp dir
+$TMP_DOWNLOAD_DIR_HOLDER = New-TemporaryFile
+$TMP_DOWNLOAD_DIR = New-Item -Itemtype Directory -Path "$TMP_DOWNLOAD_DIR_HOLDER.dir"
+$TMP_DOWNLOAD_DIR_HOLDER.Delete() | Out-Null
+trap {
+  if ($TMP_DOWNLOAD_DIR.Exists) {
+    try { Remove-Item $TMP_DOWNLOAD_DIR -Recurse -Force | Out-Null }
+    catch { Write-Warning "Cannot remove $TMP_DOWNLOAD_DIR" }
+  }
+}
+
+New-Item -Itemtype Directory -Path "$MAVEN_HOME_PARENT" -Force | Out-Null
+
+# Download and Install Apache Maven
+Write-Verbose "Couldn't find MAVEN_HOME, downloading and installing it ..."
+Write-Verbose "Downloading from: $distributionUrl"
+Write-Verbose "Downloading to: $TMP_DOWNLOAD_DIR/$distributionUrlName"
+
+$webclient = New-Object System.Net.WebClient
+if ($env:MVNW_USERNAME -and $env:MVNW_PASSWORD) {
+  $webclient.Credentials = New-Object System.Net.NetworkCredential($env:MVNW_USERNAME, $env:MVNW_PASSWORD)
+}
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$webclient.DownloadFile($distributionUrl, "$TMP_DOWNLOAD_DIR/$distributionUrlName") | Out-Null
+
+# If specified, validate the SHA-256 sum of the Maven distribution zip file
+$distributionSha256Sum = (Get-Content -Raw "$scriptDir/.mvn/wrapper/maven-wrapper.properties" | ConvertFrom-StringData).distributionSha256Sum
+if ($distributionSha256Sum) {
+  if ($USE_MVND) {
+    Write-Error "Checksum validation is not supported for maven-mvnd. `nPlease disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties."
+  }
+  Import-Module $PSHOME\Modules\Microsoft.PowerShell.Utility -Function Get-FileHash
+  if ((Get-FileHash "$TMP_DOWNLOAD_DIR/$distributionUrlName" -Algorithm SHA256).Hash.ToLower() -ne $distributionSha256Sum) {
+    Write-Error "Error: Failed to validate Maven distribution SHA-256, your Maven distribution might be compromised. If you updated your Maven version, you need to update the specified distributionSha256Sum property."
+  }
+}
+
+# unzip and move
+Expand-Archive "$TMP_DOWNLOAD_DIR/$distributionUrlName" -DestinationPath "$TMP_DOWNLOAD_DIR" | Out-Null
+
+# Find the actual extracted directory name (handles snapshots where filename != directory name)
+$actualDistributionDir = ""
+
+# First try the expected directory name (for regular distributions)
+$expectedPath = Join-Path "$TMP_DOWNLOAD_DIR" "$distributionUrlNameMain"
+$expectedMvnPath = Join-Path "$expectedPath" "bin/$MVN_CMD"
+if ((Test-Path -Path $expectedPath -PathType Container) -and (Test-Path -Path $expectedMvnPath -PathType Leaf)) {
+  $actualDistributionDir = $distributionUrlNameMain
+}
+
+# If not found, search for any directory with the Maven executable (for snapshots)
+if (!$actualDistributionDir) {
+  Get-ChildItem -Path "$TMP_DOWNLOAD_DIR" -Directory | ForEach-Object {
+    $testPath = Join-Path $_.FullName "bin/$MVN_CMD"
+    if (Test-Path -Path $testPath -PathType Leaf) {
+      $actualDistributionDir = $_.Name
+    }
+  }
+}
+
+if (!$actualDistributionDir) {
+  Write-Error "Could not find Maven distribution directory in extracted archive"
+}
+
+Write-Verbose "Found extracted Maven distribution directory: $actualDistributionDir"
+Rename-Item -Path "$TMP_DOWNLOAD_DIR/$actualDistributionDir" -NewName $MAVEN_HOME_NAME | Out-Null
+try {
+  Move-Item -Path "$TMP_DOWNLOAD_DIR/$MAVEN_HOME_NAME" -Destination $MAVEN_HOME_PARENT | Out-Null
+} catch {
+  if (! (Test-Path -Path "$MAVEN_HOME" -PathType Container)) {
+    Write-Error "fail to move MAVEN_HOME"
+  }
+} finally {
+  try { Remove-Item $TMP_DOWNLOAD_DIR -Recurse -Force | Out-Null }
+  catch { Write-Warning "Cannot remove $TMP_DOWNLOAD_DIR" }
+}
+
+Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
 
 ================
 File: repomix-output.xml
@@ -3980,48 +5635,25 @@ public interface VariationOptionRepo extends JpaRepository<VariationOptionEntity
 </files>
 
 ================
-File: .mvn/wrapper/maven-wrapper.properties
-================
-wrapperVersion=3.3.4
-distributionType=only-script
-distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.11/apache-maven-3.9.11-bin.zip
-
-================
-File: src/main/java/com/chobbi/server/catalog/domain/AttributesRule.java
-================
-package com.chobbi.server.catalog.domain;
-
-import com.chobbi.server.catalog.enums.AttributeTypesEnums;
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-public class AttributesRule {
-    private boolean required;
-    private boolean multipleAllow;
-    private boolean customAllow;
-    private AttributeTypesEnums type;
-}
-
-================
-File: src/main/java/com/chobbi/server/catalog/dto/CreateProductRequestOptionCombination.java
+File: src/main/java/com/chobbi/server/catalog/dto/CreateProductAttributeDto.java
 ================
 package com.chobbi.server.catalog.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateProductRequestOptionCombination {
-    @NotBlank
-    private String tierName;
-    @NotBlank
-    private String optionName;
+public class CreateProductAttributeDto {
+    @NotNull
+    private Long id;
+    private List<Long> valueIds;
+    private List<@NotBlank String> customValues;
 }
 
 ================
@@ -4051,24 +5683,143 @@ public class CreateProductTierDto {
 }
 
 ================
-File: src/main/java/com/chobbi/server/catalog/dto/TierValidationResult.java
+File: src/main/java/com/chobbi/server/catalog/dto/CreateProductVariationDto.java
 ================
 package com.chobbi.server.catalog.dto;
 
-import lombok.Getter;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 
-@Getter
-public class TierValidationResult {
-    private final Map<String, Set<String>> normalizedTierOptions;
-    private final int countCartesian;
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CreateProductVariationDto {
+    private BigDecimal price;
+    private Integer stock;
+    private String img;
+    @Valid
+    @Size(max = 2)
+    private List<CreateProductRequestOptionCombination> optionCombination;
+}
 
-    public TierValidationResult(Map<String, Set<String>> normalizedTierOptions, int countCartesian) {
-        this.normalizedTierOptions = normalizedTierOptions;
-        this.countCartesian = countCartesian;
-    }
+================
+File: src/main/java/com/chobbi/server/catalog/entity/AttributesEntity.java
+================
+package com.chobbi.server.catalog.entity;
+
+import com.chobbi.server.catalog.enums.AttributeTypesEnums;
+import com.chobbi.server.common.BaseEntity;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@Setter
+@Entity(name = "attributes")
+public class AttributesEntity extends BaseEntity {
+    private String name;
+    @Column(name = "is_required")
+    private Boolean isRequired;
+    @Column(name = "is_custom_allow")
+    private Boolean isCustomAllow;
+    @Column(name = "is_multiple_allow")
+    private Boolean isMultipleAllow;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AttributeTypesEnums type;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private CategoryEntity categoryEntity;
+
+    @OneToMany(mappedBy = "attributesEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttributeValuesEntity> attributeValues = new ArrayList<>();
+
+    @OneToMany(mappedBy = "attributesEntity")
+    private List<ProductAttributesEntity> productAttributes = new ArrayList<>();
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/entity/AttributeValuesEntity.java
+================
+package com.chobbi.server.catalog.entity;
+
+import com.chobbi.server.common.BaseEntity;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@Setter
+@Entity(name = "attribute_values")
+public class AttributeValuesEntity extends BaseEntity {
+    @Column(name = "is_custom")
+    private Boolean isCustom;
+    @Column(name = "value_text")
+    private String valueText;
+    @Column(name = "value_number")
+    private Double valueNumber;
+    @Column(name = "value_boolean")
+    private Boolean valueBoolean;
+    @Column(name = "value_date")
+    private LocalDate valueDate;
+    @ManyToOne
+    @JoinColumn(name = "attribute_id")
+    private AttributesEntity attributesEntity;
+    @OneToMany(mappedBy = "attributeValuesEntity")
+    private List<ProductAttributesEntity> productAttributes = new ArrayList<>();
+}
+
+================
+File: src/main/java/com/chobbi/server/catalog/entity/CategoryEntity.java
+================
+package com.chobbi.server.catalog.entity;
+
+import com.chobbi.server.common.BaseEntity;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@Setter
+@Entity(name = "category")
+public class CategoryEntity extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private CategoryEntity parent;
+    @OneToMany(mappedBy = "parent")
+    private List<CategoryEntity> children;
+    @OneToMany(mappedBy = "categoryEntity")
+    private List<ProductEntity> productEntities = new ArrayList<>();
+    @OneToMany(mappedBy = "categoryEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttributesEntity> attributes = new ArrayList<>();
 }
 
 ================
@@ -4101,7 +5852,7 @@ public class OptionsEntity extends BaseEntity {
 }
 
 ================
-File: src/main/java/com/chobbi/server/catalog/entity/TierEntity.java
+File: src/main/java/com/chobbi/server/catalog/entity/ProductAttributesEntity.java
 ================
 package com.chobbi.server.catalog.entity;
 
@@ -4109,102 +5860,22 @@ import com.chobbi.server.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
-@Entity(name = "tier")
-public class TierEntity extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    @OneToMany(mappedBy = "tierEntity", cascade = CascadeType.ALL)
-    private List<OptionsEntity> options = new ArrayList<>();
-    @ManyToOne
-    @JoinColumn(name = "product_id")
-    private ProductEntity productEntity;
-}
-
-================
-File: src/main/java/com/chobbi/server/catalog/entity/VariationEntity.java
-================
-package com.chobbi.server.catalog.entity;
-
-import com.chobbi.server.common.BaseEntity;
-import com.chobbi.server.enums.StatusEnums;
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-@Getter
-@Setter
-@Entity(name ="variation")
-public class VariationEntity extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    // private String sku;
-    private BigDecimal price;
-
-    @Column(name = "price_discount")
-    private BigDecimal priceDiscount;
-    private Integer stock;
-    //private Long weight;
+@Entity(name = "product_attributes")
+public class ProductAttributesEntity extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
     private ProductEntity productEntity;
 
-    @OneToMany(mappedBy = "variationEntity", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VariationOptionEntity> variationOptions = new ArrayList<>();
-
-//    @Enumerated(EnumType.STRING)
-//    @Column(nullable = false, length = 20)
-//    private StatusEnums status = StatusEnums.ACTIVE;
-}
-
-================
-File: src/main/java/com/chobbi/server/catalog/entity/VariationOptionEntity.java
-================
-package com.chobbi.server.catalog.entity;
-
-import com.chobbi.server.common.BaseEntity;
-import jakarta.persistence.*;
-        import lombok.Data;
-
-@Data
-@Entity(name = "variation_option")
-public class VariationOptionEntity extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @ManyToOne
-    @JoinColumn(name = "variation_id")
-    private VariationEntity variationEntity;
+    @JoinColumn(name = "attribute_id")
+    private AttributesEntity attributesEntity;
 
-    @ManyToOne
-    @JoinColumn(name = "option_id")
-    private OptionsEntity optionsEntity;
-}
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "attribute_value_id")
+    private AttributeValuesEntity attributeValuesEntity;
 
-================
-File: src/main/java/com/chobbi/server/catalog/enums/AttributeTypesEnums.java
-================
-package com.chobbi.server.catalog.enums;
-
-public enum AttributeTypesEnums {
-    TEXT,
-    NUMBER,
-    BOOLEAN,
-    DATE
 }
 
 ================
@@ -4212,11 +5883,17 @@ File: src/main/java/com/chobbi/server/catalog/services/impl/CategoryServicesImpl
 ================
 package com.chobbi.server.catalog.services.impl;
 
+import com.chobbi.server.catalog.dto.CategoryDto;
 import com.chobbi.server.catalog.entity.CategoryEntity;
 import com.chobbi.server.catalog.services.CategoryServices;
 import com.chobbi.server.catalog.repo.CategoryRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -4224,20 +5901,73 @@ public class CategoryServicesImpl implements CategoryServices {
     private final CategoryRepo categoryRepo;
 
     @Override
-    public CategoryEntity getLeafCategoryOrThrow(Long categoryId) {
-        CategoryEntity category = categoryRepo.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+    public List<CategoryDto> getTree() {
+        List<CategoryEntity> allEntities = categoryRepo.findAllByDeletedAtIsNull();
+        return buildTree(allEntities, null);
+    }
 
-        if (!isLeaf(category.getId())) {
-            throw new RuntimeException("Category is not a leaf node");
+    @Override
+    public List<CategoryDto> getTree(Long categoryId) {
+        // Sử dụng Native Query đệ quy đã viết trong Repo
+        List<CategoryEntity> descendants = categoryRepo.findAllDescendants(categoryId);
+        return buildTree(descendants, categoryId);
+    }
+
+    @Override
+    public CategoryEntity getLeafCategoryOrThrow(Long categoryId) {
+        // 1. Tìm Entity trước
+        CategoryEntity category = categoryRepo.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
+
+        // 2. Check xem nó có phải là Leaf không
+        boolean hasChildren = categoryRepo.existsByParentId(categoryId);
+
+        if (hasChildren) {
+            // Nếu có con -> Không phải leaf -> Throw lỗi
+            throw new IllegalArgumentException("Category '" + category.getName() + "' is a parent category. Please select a leaf category.");
         }
+
+        // 3. Đúng là Leaf thì trả về luôn để sử dụng
         return category;
     }
+
     /**
-     * Kiểm tra category có phải là leaf không
+     * Hàm dùng chung để dựng cây từ danh sách phẳng.
+     * @param entities Danh sách các node (toàn bộ hoặc một nhánh)
+     * @param rootId ID của node gốc nếu đang lấy một nhánh (có thể null)
      */
-    private boolean isLeaf(Long categoryId) {
-        return !categoryRepo.existsByParentId(categoryId);
+    private List<CategoryDto> buildTree(List<CategoryEntity> entities, Long rootId) {
+        if (entities.isEmpty()) return new ArrayList<>();
+
+        Map<Long, CategoryDto> map = new HashMap<>();
+        List<CategoryDto> roots = new ArrayList<>();
+
+        // Bước 1: Khởi tạo Map DTO
+        for (CategoryEntity entity : entities) {
+            CategoryDto dto = new CategoryDto();
+            dto.setId(entity.getId());
+            dto.setName(entity.getName());
+            dto.setChildren(new ArrayList<>());
+            map.put(dto.getId(), dto);
+        }
+
+        // Bước 2: Dựng cây
+        for (CategoryEntity entity : entities) {
+            CategoryDto currentDto = map.get(entity.getId());
+            CategoryEntity parentEntity = entity.getParent();
+
+            // Kiểm tra xem node này có cha trong danh sách hiện tại không
+            if (parentEntity == null || !map.containsKey(parentEntity.getId())) {
+                // Nếu không có cha HOẶC cha nằm ngoài phạm vi list (trường hợp lấy 1 nhánh)
+                // thì thằng này chính là Gốc của kết quả trả về
+                roots.add(currentDto);
+            } else {
+                // Gắn vào danh sách children của cha
+                CategoryDto parentDto = map.get(parentEntity.getId());
+                parentDto.getChildren().add(currentDto);
+            }
+        }
+        return roots;
     }
 }
 
@@ -4280,6 +6010,7 @@ public class ProductServicesImpl implements ProductServices {
     private final VariationOptionRepo variationOptionRepo;
     private final OptionsRepo optionRepo;
     private final TierRepo tierRepo;
+    private final CategoryRepo categoryRepo;
 
     @Override
     @Transactional
@@ -4630,6 +6361,100 @@ public class ProductServicesImpl implements ProductServices {
         productRepo.save(product);
     }
 
+    @Override
+    public ReadProductDto readProduct(Long productId) {
+        ProductEntity product = productRepo.findByIdAndDeletedAtIsNull(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        ReadProductDto dto = new ReadProductDto();
+        dto.setProductId(product.getId());
+        dto.setProductName(product.getName());
+        dto.setDescription(product.getDescription());
+
+        dto.setImages(product.getProductImages().stream()
+                .map(img -> new ReadProductImageDto(img.getPath(), String.valueOf(img.getSortOrder())))
+                .toList());
+
+        List<ReadProductTierDto> tierDtos = new ArrayList<>();
+        List<ReadProductOptionImagesDto> optionImageDtos = new ArrayList<>();
+
+        for (TierEntity tier : product.getTiers()) {
+            ReadProductTierDto tierDto = new ReadProductTierDto();
+            tierDto.setId(tier.getId());
+            tierDto.setName(tier.getName());
+
+            boolean hasImages = tier.getOptions().stream().anyMatch(opt -> opt.getImgPath() != null);
+            tierDto.setHasImages(hasImages);
+
+            List<ReadProductTierOptionDto> optionDtos = tier.getOptions().stream()
+                    .map(opt -> {
+                        if (opt.getImgPath() != null) {
+                            optionImageDtos.add(new ReadProductOptionImagesDto(tier.getId(), opt.getId(), opt.getImgPath()));
+                        }
+                        return new ReadProductTierOptionDto(opt.getId(), opt.getName());
+                    })
+                    .toList();
+
+            tierDto.setOptions(optionDtos);
+            tierDtos.add(tierDto);
+        }
+        dto.setTiers(tierDtos);
+        dto.setOptionImages(optionImageDtos);
+
+        dto.setVariations(product.getVariations().stream()
+                .map(v -> {
+                    ReadProductVariationDto vDto = new ReadProductVariationDto();
+                    vDto.setPrice(v.getPrice());
+                    vDto.setStock(v.getStock());
+
+                    List<ReadProductVariationOptionDto> combinations = v.getVariationOptions().stream()
+                            .map(vo -> new ReadProductVariationOptionDto(
+                                    vo.getOptionsEntity().getTierEntity().getId(),
+                                    vo.getOptionsEntity().getId()))
+                            .toList();
+
+                    vDto.setOptionCombination(combinations);
+                    return vDto;
+                })
+                .toList());
+
+        Set<Long> productValueIds = product.getProductAttributes().stream()
+                .map(pa -> pa.getAttributeValuesEntity().getId())
+                .collect(Collectors.toSet());
+
+        List<ReadProductAttributes> attributeDefinitions = product.getCategoryEntity().getAttributes().stream()
+                .map(attr -> {
+                    List<Long> filteredValueIds = attr.getAttributeValues().stream()
+                            .filter(val -> {
+                                if (!val.getIsCustom()) return true;
+                                return productValueIds.contains(val.getId());
+                            })
+                            .map(AttributeValuesEntity::getId)
+                            .toList();
+
+                    return new ReadProductAttributes(attr.getId(), filteredValueIds);
+                })
+                .toList();
+        dto.setAttributes(attributeDefinitions);
+
+        Map<Long, List<Long>> selectedMap = product.getProductAttributes().stream()
+                .collect(Collectors.groupingBy(
+                        pa -> pa.getAttributesEntity().getId(),
+                        Collectors.mapping(pa -> pa.getAttributeValuesEntity().getId(), Collectors.toList())
+                ));
+
+        List<ReadProductSelectedAttributes> selectedAttributes = selectedMap.entrySet().stream()
+                .map(entry -> new ReadProductSelectedAttributes(entry.getKey(), entry.getValue()))
+                .toList();
+        dto.setSelectedAttributes(selectedAttributes);
+
+        dto.setSelectedCategoryId(product.getCategoryEntity().getId());
+        dto.setCategoryTree(categoryServices.getTree());
+
+        return dto;
+    }
+
+
     private static CreateProductVariationDto validateNoTiers(CreateProductRequest req) {
         List<CreateProductVariationDto> reqVariations = req.getVariations();
         if (reqVariations.size() != 1) {
@@ -4712,1235 +6537,128 @@ public class ProductServicesImpl implements ProductServices {
 }
 
 ================
-File: src/main/java/com/chobbi/server/catalog/services/CategoryServices.java
-================
-package com.chobbi.server.catalog.services;
-
-import com.chobbi.server.catalog.entity.CategoryEntity;
-
-public interface CategoryServices {
-    CategoryEntity getLeafCategoryOrThrow(Long categoryId);
-}
-
-================
 File: src/main/java/com/chobbi/server/catalog/services/ProductServices.java
 ================
 package com.chobbi.server.catalog.services;
 
+import com.chobbi.server.catalog.dto.CategoryDto;
 import com.chobbi.server.catalog.dto.CreateProductRequest;
+import com.chobbi.server.catalog.dto.ReadProductDto;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface ProductServices {
     void createProduct(CreateProductRequest productRequest, MultipartFile[] media);
+    ReadProductDto readProduct(Long productId);
 }
 
 ================
-File: src/main/java/com/chobbi/server/catalog/cart.json
+File: src/main/java/com/chobbi/server/controller/CartController.java
 ================
 
 
 ================
-File: src/main/java/com/chobbi/server/catalog/product-detail-buyer.json
+File: src/main/java/com/chobbi/server/dto/ProductDto.java
 ================
-{
-  "id": 1,
-  "name": "name_9a67e504330d",
-  "img_thumbnail": "/images/.jpg",
-  "img_list": [
-    {
-      "url": "/images/.jpg",
-      "sort_order": 1
-    },
-    {
-      "url": "/images/.jpg",
-      "sort_order": 2
-    }
-  ],
-  "description": "hello description",
-  "attributes": [
-    {
-      "name": "Thương hiệu",
-      "value": "NO BRAND"
-    },
-    {
-      "name": "Xuất xú",
-      "value": "China"
-    }
-  ],
-  "tiers": [
-    {
-      "id": 0,
-      "name": "name_b94af93c2224",
-      "options": [
-        {
-          "id": 0,
-          "name": "name_7bd64675c658"
-        },
-        {
-          "id": 1,
-          "name": "name_7bd64675c658"
-        }
-      ]
-    }
-  ],
-  "variations": [
-    {
-      "id": 0,
-      "sku": "sku_dde896825a7a",
-      "option_indices": [
-        0
-      ],
-      "price": 0.00,
-      "stock": 0
-    }
-  ],
-  "categories": [
-    {
-      "id": 0,
-      "name": "name_c64ae4825c73"
-    }
-  ]
-}
-
-================
-File: src/main/java/com/chobbi/server/catalog/product-update-seller.json
-================
-{
-  "id": 1,
-  "name": "name_9a67e504330d",
-  "img_thumbnail": "/images/.jpg",
-  "img_list": [
-    {
-      "url": "/images/.jpg",
-      "sort_order": 1
-    },
-    {
-      "url": "/images/.jpg",
-      "sort_order": 2
-    }
-  ],
-  "description": "hello description",
-  "attributes": [
-    {
-      "name": "Thương hiệu",
-      "value": "NO BRAND"
-    },
-    {
-      "name": "Xuất xú",
-      "value": "China"
-    }
-  ],
-  "tiers": [
-    {
-      "id": 0,
-      "name": "name_b94af93c2224",
-      "options": [
-        {
-          "id": 0,
-          "name": "name_7bd64675c658"
-        },
-        {
-          "id": 1,
-          "name": "name_7bd64675c658"
-        }
-      ]
-    }
-  ],
-  "variations": [
-    {
-      "id": 0,
-      "sku": "sku_dde896825a7a",
-      "option_indices": [
-        0
-      ],
-      "price": 0.00,
-      "stock": 0
-    }
-  ],
-  "categories": [
-    {
-      "id": 0,
-      "name": "name_c64ae4825c73"
-    }
-  ]
-}
-
-================
-File: src/main/java/com/chobbi/server/common/BaseEntity.java
-================
-package com.chobbi.server.common;
-
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
-
-@Getter
-@Setter
-@MappedSuperclass
-public abstract class BaseEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false, nullable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
-    public void softDelete() {
-        this.deletedAt = LocalDateTime.now();
-    }
-
-    public boolean isDeleted() {
-        return this.deletedAt != null;
-    }
-}
-
-================
-File: src/main/java/com/chobbi/server/config/SecurityConfig.java
-================
-package com.chobbi.server.config;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-
-@Configuration
-public class SecurityConfig {
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(req -> {
-                    req.anyRequest().permitAll();
-                })
-                .build();
-    }
-}
-
-================
-File: src/main/java/com/chobbi/server/controller/AuthenticationController.java
-================
-package com.chobbi.server.controller;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-@RequiredArgsConstructor
-@RequestMapping("/auth")
-public class AuthenticationController {
-    @PostMapping("/register")
-    public ResponseEntity<?> register() {
-
-        return ResponseEntity.ok("Register endpoint");
-    }
-}
-
-================
-File: src/main/java/com/chobbi/server/controller/CheckoutController.java
-================
-package com.chobbi.server.controller;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-@RequestMapping("/checkout")
-@RequiredArgsConstructor
-public class CheckoutController {
-    @GetMapping
-    public String checkout() {
-        return "Checkout endpoint";
-    }
-}
-
-================
-File: src/main/java/com/chobbi/server/dto/cart/CartAddResponseDto.java
-================
-package com.chobbi.server.dto.cart;
+package com.chobbi.server.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class CartAddResponseDto {
-    private Long shopId;
-    private Long productId;
-    private BigDecimal priceUnit;
-}
-
-================
-File: src/main/java/com/chobbi/server/dto/cart/CartProductDto.java
-================
-package com.chobbi.server.dto.cart;
-
-import com.chobbi.server.dto.TierDto;
-import com.chobbi.server.dto.VariationDto;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CartProductDto {
-    private Long productId;
-    private String productName;
-    private Integer quantity;
-    private Long selected_variation_id;
-    private BigDecimal price_unit;
+public class ProductDto {
+    private Long id;
+    private String name;
     private List<TierDto> tiers = new ArrayList<>();
     private List<VariationDto> variations = new ArrayList<>();
+    private List<CategoryDto> categories  = new ArrayList<>();
 }
 
 ================
-File: src/main/java/com/chobbi/server/dto/cart/CartResponseDto.java
-================
-package com.chobbi.server.dto.cart;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class CartResponseDto {
-    private Long accountId;
-    private List<CartShopDto> shops;
-}
-
-================
-File: src/main/java/com/chobbi/server/dto/cart/CartShopDto.java
-================
-package com.chobbi.server.dto.cart;
-
-import com.chobbi.server.dto.TierDto;
-import com.chobbi.server.dto.VariationDto;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class CartShopDto {
-    private Long shopId;
-    private String shopName;
-    private List<CartProductDto> product;
-}
-
-================
-File: src/main/java/com/chobbi/server/dto/CategoryDto.java
-================
-package com.chobbi.server.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class CategoryDto {
-    private Long id;
-    private String name;
-}
-
-================
-File: src/main/java/com/chobbi/server/dto/OptionDto.java
-================
-package com.chobbi.server.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class OptionDto {
-    private Long id;
-    private String name;
-}
-
-================
-File: src/main/java/com/chobbi/server/dto/OptionRequestDto.java
-================
-package com.chobbi.server.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class OptionRequestDto {
-    private Long id;
-    private String name;
-}
-
-================
-File: src/main/java/com/chobbi/server/dto/ProductVariationDto.java
-================
-package com.chobbi.server.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class ProductVariationDto {
-    private Long productId;
-    private Long productName;
-}
-
-================
-File: src/main/java/com/chobbi/server/dto/TierDto.java
-================
-package com.chobbi.server.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class TierDto {
-    private Long id;
-    private String name;
-    private List<OptionDto> options = new ArrayList<>();
-}
-
-================
-File: src/main/java/com/chobbi/server/dto/TierRequestDto.java
-================
-package com.chobbi.server.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class TierRequestDto {
-    private Long id;
-    private String name;
-    private List<OptionRequestDto> options = new ArrayList<>();
-}
-
-================
-File: src/main/java/com/chobbi/server/dto/VariationDto.java
-================
-package com.chobbi.server.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-//      "id": 1001,
-//              "sku": "TS-RED-M",
-//              "option_value_ids": [
-//              101,
-//              201
-//              ],
-//              "price": 150000,
-//              "stock": 10
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class VariationDto {
-    private Long id;
-    private String sku;
-    private List<Integer> option_indices = new ArrayList<>();
-    private BigDecimal price;
-    private Long stock;
-}
-
-================
-File: src/main/java/com/chobbi/server/dto/VariationQuantityDto.java
-================
-package com.chobbi.server.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class VariationQuantityDto {
-    private Long variationId;
-    private Long variationName;
-    private BigDecimal price;
-    private BigDecimal priceDiscount;
-    private Integer stock;
-    private Integer quantity;
-}
-
-================
-File: src/main/java/com/chobbi/server/dto/VariationRequestDto.java
-================
-package com.chobbi.server.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class VariationRequestDto {
-    private Long id;
-    private String name;
-    private String sku;
-    private BigDecimal price;
-    private Long stock;
-    private List<Integer> option_indices = new ArrayList<>();
-}
-
-================
-File: src/main/java/com/chobbi/server/entity/AccountRolesEntity.java
+File: src/main/java/com/chobbi/server/entity/CartEntity.java
 ================
 package com.chobbi.server.entity;
 
+import com.chobbi.server.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
-@Entity(name = "account_roles")
-public class AccountRolesEntity {
+@Entity(name = "cart")
+public class CartEntity extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @OneToOne
+    @JoinColumn(name = "account_id")
+    private AccountEntity accountEntity;
+}
+
+================
+File: src/main/java/com/chobbi/server/entity/CartVariationEntity.java
+================
+package com.chobbi.server.entity;
+
+import com.chobbi.server.catalog.entity.VariationEntity;
+import com.chobbi.server.common.BaseEntity;
+import jakarta.persistence.*;
+import lombok.Data;
+
+import java.math.BigDecimal;
+
+@Data
+@Entity(name = "cart_variation")
+public class CartVariationEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "account_id")
-    private AccountEntity accountEntity;
+    private Integer quantity;
+    @Column(name = "price_at_time")
+    private BigDecimal priceAtTime;
 
     @ManyToOne
-    @JoinColumn(name = "roles_id")
-    private RolesEntity rolesEntity;
+    @JoinColumn(name = "cart_id")
+    private CartEntity cartEntity;
+
+    @ManyToOne
+    @JoinColumn(name = "variation_id")
+    private VariationEntity variationEntity;
 }
 
 ================
-File: src/main/java/com/chobbi/server/enums/ProductDtofieldEnums.java
+File: src/main/java/com/chobbi/server/entity/RolesEntity.java
+================
+package com.chobbi.server.entity;
+
+import com.chobbi.server.common.BaseEntity;
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Data
+@Entity(name = "roles")
+public class RolesEntity extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+}
+
+================
+File: src/main/java/com/chobbi/server/enums/StatusEnums.java
 ================
 package com.chobbi.server.enums;
 
-public enum ProductDtofieldEnums {
-    OPTIONS,
-    VARIANTS,
-    CATEGORIES
-}
-
-================
-File: src/main/java/com/chobbi/server/exception/BusinessException.java
-================
-package com.chobbi.server.exception;
-
-import org.springframework.http.HttpStatus;
-
-public class BusinessException extends RuntimeException {
-    private final HttpStatus status;
-
-    public BusinessException(String message, HttpStatus status) {
-        super(message);
-        this.status = status;
-    }
-
-    public HttpStatus getStatus() {
-        return status;
-    }
-}
-
-================
-File: src/main/java/com/chobbi/server/exception/GlobalExceptionHandler.java
-================
-package com.chobbi.server.exception;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", ex.getStatus().value());
-        body.put("error", ex.getStatus().getReasonPhrase());
-        body.put("message", ex.getMessage());
-
-        return new ResponseEntity<>(body, ex.getStatus());
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        body.put("error", "Internal Server Error");
-        body.put("message", ex.getMessage());
-
-        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-}
-
-================
-File: src/main/java/com/chobbi/server/ServerApplication.java
-================
-package com.chobbi.server;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
-public class ServerApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(ServerApplication.class, args);
-	}
-
-}
-
-================
-File: src/test/java/com/chobbi/server/ServerApplicationTests.java
-================
-package com.chobbi.server;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@SpringBootTest
-class ServerApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
-
-}
-
-================
-File: .gitattributes
-================
-/mvnw text eol=lf
-*.cmd text eol=crlf
-
-================
-File: .gitignore
-================
-HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-
-================
-File: mvnw
-================
-#!/bin/sh
-# ----------------------------------------------------------------------------
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
-# ----------------------------------------------------------------------------
-
-# ----------------------------------------------------------------------------
-# Apache Maven Wrapper startup batch script, version 3.3.4
-#
-# Optional ENV vars
-# -----------------
-#   JAVA_HOME - location of a JDK home dir, required when download maven via java source
-#   MVNW_REPOURL - repo url base for downloading maven distribution
-#   MVNW_USERNAME/MVNW_PASSWORD - user and password for downloading maven
-#   MVNW_VERBOSE - true: enable verbose log; debug: trace the mvnw script; others: silence the output
-# ----------------------------------------------------------------------------
-
-set -euf
-[ "${MVNW_VERBOSE-}" != debug ] || set -x
-
-# OS specific support.
-native_path() { printf %s\\n "$1"; }
-case "$(uname)" in
-CYGWIN* | MINGW*)
-  [ -z "${JAVA_HOME-}" ] || JAVA_HOME="$(cygpath --unix "$JAVA_HOME")"
-  native_path() { cygpath --path --windows "$1"; }
-  ;;
-esac
-
-# set JAVACMD and JAVACCMD
-set_java_home() {
-  # For Cygwin and MinGW, ensure paths are in Unix format before anything is touched
-  if [ -n "${JAVA_HOME-}" ]; then
-    if [ -x "$JAVA_HOME/jre/sh/java" ]; then
-      # IBM's JDK on AIX uses strange locations for the executables
-      JAVACMD="$JAVA_HOME/jre/sh/java"
-      JAVACCMD="$JAVA_HOME/jre/sh/javac"
-    else
-      JAVACMD="$JAVA_HOME/bin/java"
-      JAVACCMD="$JAVA_HOME/bin/javac"
-
-      if [ ! -x "$JAVACMD" ] || [ ! -x "$JAVACCMD" ]; then
-        echo "The JAVA_HOME environment variable is not defined correctly, so mvnw cannot run." >&2
-        echo "JAVA_HOME is set to \"$JAVA_HOME\", but \"\$JAVA_HOME/bin/java\" or \"\$JAVA_HOME/bin/javac\" does not exist." >&2
-        return 1
-      fi
-    fi
-  else
-    JAVACMD="$(
-      'set' +e
-      'unset' -f command 2>/dev/null
-      'command' -v java
-    )" || :
-    JAVACCMD="$(
-      'set' +e
-      'unset' -f command 2>/dev/null
-      'command' -v javac
-    )" || :
-
-    if [ ! -x "${JAVACMD-}" ] || [ ! -x "${JAVACCMD-}" ]; then
-      echo "The java/javac command does not exist in PATH nor is JAVA_HOME set, so mvnw cannot run." >&2
-      return 1
-    fi
-  fi
-}
-
-# hash string like Java String::hashCode
-hash_string() {
-  str="${1:-}" h=0
-  while [ -n "$str" ]; do
-    char="${str%"${str#?}"}"
-    h=$(((h * 31 + $(LC_CTYPE=C printf %d "'$char")) % 4294967296))
-    str="${str#?}"
-  done
-  printf %x\\n $h
-}
-
-verbose() { :; }
-[ "${MVNW_VERBOSE-}" != true ] || verbose() { printf %s\\n "${1-}"; }
-
-die() {
-  printf %s\\n "$1" >&2
-  exit 1
-}
-
-trim() {
-  # MWRAPPER-139:
-  #   Trims trailing and leading whitespace, carriage returns, tabs, and linefeeds.
-  #   Needed for removing poorly interpreted newline sequences when running in more
-  #   exotic environments such as mingw bash on Windows.
-  printf "%s" "${1}" | tr -d '[:space:]'
-}
-
-scriptDir="$(dirname "$0")"
-scriptName="$(basename "$0")"
-
-# parse distributionUrl and optional distributionSha256Sum, requires .mvn/wrapper/maven-wrapper.properties
-while IFS="=" read -r key value; do
-  case "${key-}" in
-  distributionUrl) distributionUrl=$(trim "${value-}") ;;
-  distributionSha256Sum) distributionSha256Sum=$(trim "${value-}") ;;
-  esac
-done <"$scriptDir/.mvn/wrapper/maven-wrapper.properties"
-[ -n "${distributionUrl-}" ] || die "cannot read distributionUrl property in $scriptDir/.mvn/wrapper/maven-wrapper.properties"
-
-case "${distributionUrl##*/}" in
-maven-mvnd-*bin.*)
-  MVN_CMD=mvnd.sh _MVNW_REPO_PATTERN=/maven/mvnd/
-  case "${PROCESSOR_ARCHITECTURE-}${PROCESSOR_ARCHITEW6432-}:$(uname -a)" in
-  *AMD64:CYGWIN* | *AMD64:MINGW*) distributionPlatform=windows-amd64 ;;
-  :Darwin*x86_64) distributionPlatform=darwin-amd64 ;;
-  :Darwin*arm64) distributionPlatform=darwin-aarch64 ;;
-  :Linux*x86_64*) distributionPlatform=linux-amd64 ;;
-  *)
-    echo "Cannot detect native platform for mvnd on $(uname)-$(uname -m), use pure java version" >&2
-    distributionPlatform=linux-amd64
-    ;;
-  esac
-  distributionUrl="${distributionUrl%-bin.*}-$distributionPlatform.zip"
-  ;;
-maven-mvnd-*) MVN_CMD=mvnd.sh _MVNW_REPO_PATTERN=/maven/mvnd/ ;;
-*) MVN_CMD="mvn${scriptName#mvnw}" _MVNW_REPO_PATTERN=/org/apache/maven/ ;;
-esac
-
-# apply MVNW_REPOURL and calculate MAVEN_HOME
-# maven home pattern: ~/.m2/wrapper/dists/{apache-maven-<version>,maven-mvnd-<version>-<platform>}/<hash>
-[ -z "${MVNW_REPOURL-}" ] || distributionUrl="$MVNW_REPOURL$_MVNW_REPO_PATTERN${distributionUrl#*"$_MVNW_REPO_PATTERN"}"
-distributionUrlName="${distributionUrl##*/}"
-distributionUrlNameMain="${distributionUrlName%.*}"
-distributionUrlNameMain="${distributionUrlNameMain%-bin}"
-MAVEN_USER_HOME="${MAVEN_USER_HOME:-${HOME}/.m2}"
-MAVEN_HOME="${MAVEN_USER_HOME}/wrapper/dists/${distributionUrlNameMain-}/$(hash_string "$distributionUrl")"
-
-exec_maven() {
-  unset MVNW_VERBOSE MVNW_USERNAME MVNW_PASSWORD MVNW_REPOURL || :
-  exec "$MAVEN_HOME/bin/$MVN_CMD" "$@" || die "cannot exec $MAVEN_HOME/bin/$MVN_CMD"
-}
-
-if [ -d "$MAVEN_HOME" ]; then
-  verbose "found existing MAVEN_HOME at $MAVEN_HOME"
-  exec_maven "$@"
-fi
-
-case "${distributionUrl-}" in
-*?-bin.zip | *?maven-mvnd-?*-?*.zip) ;;
-*) die "distributionUrl is not valid, must match *-bin.zip or maven-mvnd-*.zip, but found '${distributionUrl-}'" ;;
-esac
-
-# prepare tmp dir
-if TMP_DOWNLOAD_DIR="$(mktemp -d)" && [ -d "$TMP_DOWNLOAD_DIR" ]; then
-  clean() { rm -rf -- "$TMP_DOWNLOAD_DIR"; }
-  trap clean HUP INT TERM EXIT
-else
-  die "cannot create temp dir"
-fi
-
-mkdir -p -- "${MAVEN_HOME%/*}"
-
-# Download and Install Apache Maven
-verbose "Couldn't find MAVEN_HOME, downloading and installing it ..."
-verbose "Downloading from: $distributionUrl"
-verbose "Downloading to: $TMP_DOWNLOAD_DIR/$distributionUrlName"
-
-# select .zip or .tar.gz
-if ! command -v unzip >/dev/null; then
-  distributionUrl="${distributionUrl%.zip}.tar.gz"
-  distributionUrlName="${distributionUrl##*/}"
-fi
-
-# verbose opt
-__MVNW_QUIET_WGET=--quiet __MVNW_QUIET_CURL=--silent __MVNW_QUIET_UNZIP=-q __MVNW_QUIET_TAR=''
-[ "${MVNW_VERBOSE-}" != true ] || __MVNW_QUIET_WGET='' __MVNW_QUIET_CURL='' __MVNW_QUIET_UNZIP='' __MVNW_QUIET_TAR=v
-
-# normalize http auth
-case "${MVNW_PASSWORD:+has-password}" in
-'') MVNW_USERNAME='' MVNW_PASSWORD='' ;;
-has-password) [ -n "${MVNW_USERNAME-}" ] || MVNW_USERNAME='' MVNW_PASSWORD='' ;;
-esac
-
-if [ -z "${MVNW_USERNAME-}" ] && command -v wget >/dev/null; then
-  verbose "Found wget ... using wget"
-  wget ${__MVNW_QUIET_WGET:+"$__MVNW_QUIET_WGET"} "$distributionUrl" -O "$TMP_DOWNLOAD_DIR/$distributionUrlName" || die "wget: Failed to fetch $distributionUrl"
-elif [ -z "${MVNW_USERNAME-}" ] && command -v curl >/dev/null; then
-  verbose "Found curl ... using curl"
-  curl ${__MVNW_QUIET_CURL:+"$__MVNW_QUIET_CURL"} -f -L -o "$TMP_DOWNLOAD_DIR/$distributionUrlName" "$distributionUrl" || die "curl: Failed to fetch $distributionUrl"
-elif set_java_home; then
-  verbose "Falling back to use Java to download"
-  javaSource="$TMP_DOWNLOAD_DIR/Downloader.java"
-  targetZip="$TMP_DOWNLOAD_DIR/$distributionUrlName"
-  cat >"$javaSource" <<-END
-	public class Downloader extends java.net.Authenticator
-	{
-	  protected java.net.PasswordAuthentication getPasswordAuthentication()
-	  {
-	    return new java.net.PasswordAuthentication( System.getenv( "MVNW_USERNAME" ), System.getenv( "MVNW_PASSWORD" ).toCharArray() );
-	  }
-	  public static void main( String[] args ) throws Exception
-	  {
-	    setDefault( new Downloader() );
-	    java.nio.file.Files.copy( java.net.URI.create( args[0] ).toURL().openStream(), java.nio.file.Paths.get( args[1] ).toAbsolutePath().normalize() );
-	  }
-	}
-	END
-  # For Cygwin/MinGW, switch paths to Windows format before running javac and java
-  verbose " - Compiling Downloader.java ..."
-  "$(native_path "$JAVACCMD")" "$(native_path "$javaSource")" || die "Failed to compile Downloader.java"
-  verbose " - Running Downloader.java ..."
-  "$(native_path "$JAVACMD")" -cp "$(native_path "$TMP_DOWNLOAD_DIR")" Downloader "$distributionUrl" "$(native_path "$targetZip")"
-fi
-
-# If specified, validate the SHA-256 sum of the Maven distribution zip file
-if [ -n "${distributionSha256Sum-}" ]; then
-  distributionSha256Result=false
-  if [ "$MVN_CMD" = mvnd.sh ]; then
-    echo "Checksum validation is not supported for maven-mvnd." >&2
-    echo "Please disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties." >&2
-    exit 1
-  elif command -v sha256sum >/dev/null; then
-    if echo "$distributionSha256Sum  $TMP_DOWNLOAD_DIR/$distributionUrlName" | sha256sum -c - >/dev/null 2>&1; then
-      distributionSha256Result=true
-    fi
-  elif command -v shasum >/dev/null; then
-    if echo "$distributionSha256Sum  $TMP_DOWNLOAD_DIR/$distributionUrlName" | shasum -a 256 -c >/dev/null 2>&1; then
-      distributionSha256Result=true
-    fi
-  else
-    echo "Checksum validation was requested but neither 'sha256sum' or 'shasum' are available." >&2
-    echo "Please install either command, or disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties." >&2
-    exit 1
-  fi
-  if [ $distributionSha256Result = false ]; then
-    echo "Error: Failed to validate Maven distribution SHA-256, your Maven distribution might be compromised." >&2
-    echo "If you updated your Maven version, you need to update the specified distributionSha256Sum property." >&2
-    exit 1
-  fi
-fi
-
-# unzip and move
-if command -v unzip >/dev/null; then
-  unzip ${__MVNW_QUIET_UNZIP:+"$__MVNW_QUIET_UNZIP"} "$TMP_DOWNLOAD_DIR/$distributionUrlName" -d "$TMP_DOWNLOAD_DIR" || die "failed to unzip"
-else
-  tar xzf${__MVNW_QUIET_TAR:+"$__MVNW_QUIET_TAR"} "$TMP_DOWNLOAD_DIR/$distributionUrlName" -C "$TMP_DOWNLOAD_DIR" || die "failed to untar"
-fi
-
-# Find the actual extracted directory name (handles snapshots where filename != directory name)
-actualDistributionDir=""
-
-# First try the expected directory name (for regular distributions)
-if [ -d "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain" ]; then
-  if [ -f "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain/bin/$MVN_CMD" ]; then
-    actualDistributionDir="$distributionUrlNameMain"
-  fi
-fi
-
-# If not found, search for any directory with the Maven executable (for snapshots)
-if [ -z "$actualDistributionDir" ]; then
-  # enable globbing to iterate over items
-  set +f
-  for dir in "$TMP_DOWNLOAD_DIR"/*; do
-    if [ -d "$dir" ]; then
-      if [ -f "$dir/bin/$MVN_CMD" ]; then
-        actualDistributionDir="$(basename "$dir")"
-        break
-      fi
-    fi
-  done
-  set -f
-fi
-
-if [ -z "$actualDistributionDir" ]; then
-  verbose "Contents of $TMP_DOWNLOAD_DIR:"
-  verbose "$(ls -la "$TMP_DOWNLOAD_DIR")"
-  die "Could not find Maven distribution directory in extracted archive"
-fi
-
-verbose "Found extracted Maven distribution directory: $actualDistributionDir"
-printf %s\\n "$distributionUrl" >"$TMP_DOWNLOAD_DIR/$actualDistributionDir/mvnw.url"
-mv -- "$TMP_DOWNLOAD_DIR/$actualDistributionDir" "$MAVEN_HOME" || [ -d "$MAVEN_HOME" ] || die "fail to move MAVEN_HOME"
-
-clean || :
-exec_maven "$@"
-
-================
-File: mvnw.cmd
-================
-<# : batch portion
-@REM ----------------------------------------------------------------------------
-@REM Licensed to the Apache Software Foundation (ASF) under one
-@REM or more contributor license agreements.  See the NOTICE file
-@REM distributed with this work for additional information
-@REM regarding copyright ownership.  The ASF licenses this file
-@REM to you under the Apache License, Version 2.0 (the
-@REM "License"); you may not use this file except in compliance
-@REM with the License.  You may obtain a copy of the License at
-@REM
-@REM    http://www.apache.org/licenses/LICENSE-2.0
-@REM
-@REM Unless required by applicable law or agreed to in writing,
-@REM software distributed under the License is distributed on an
-@REM "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-@REM KIND, either express or implied.  See the License for the
-@REM specific language governing permissions and limitations
-@REM under the License.
-@REM ----------------------------------------------------------------------------
-
-@REM ----------------------------------------------------------------------------
-@REM Apache Maven Wrapper startup batch script, version 3.3.4
-@REM
-@REM Optional ENV vars
-@REM   MVNW_REPOURL - repo url base for downloading maven distribution
-@REM   MVNW_USERNAME/MVNW_PASSWORD - user and password for downloading maven
-@REM   MVNW_VERBOSE - true: enable verbose log; others: silence the output
-@REM ----------------------------------------------------------------------------
-
-@IF "%__MVNW_ARG0_NAME__%"=="" (SET __MVNW_ARG0_NAME__=%~nx0)
-@SET __MVNW_CMD__=
-@SET __MVNW_ERROR__=
-@SET __MVNW_PSMODULEP_SAVE=%PSModulePath%
-@SET PSModulePath=
-@FOR /F "usebackq tokens=1* delims==" %%A IN (`powershell -noprofile "& {$scriptDir='%~dp0'; $script='%__MVNW_ARG0_NAME__%'; icm -ScriptBlock ([Scriptblock]::Create((Get-Content -Raw '%~f0'))) -NoNewScope}"`) DO @(
-  IF "%%A"=="MVN_CMD" (set __MVNW_CMD__=%%B) ELSE IF "%%B"=="" (echo %%A) ELSE (echo %%A=%%B)
-)
-@SET PSModulePath=%__MVNW_PSMODULEP_SAVE%
-@SET __MVNW_PSMODULEP_SAVE=
-@SET __MVNW_ARG0_NAME__=
-@SET MVNW_USERNAME=
-@SET MVNW_PASSWORD=
-@IF NOT "%__MVNW_CMD__%"=="" ("%__MVNW_CMD__%" %*)
-@echo Cannot start maven from wrapper >&2 && exit /b 1
-@GOTO :EOF
-: end batch / begin powershell #>
-
-$ErrorActionPreference = "Stop"
-if ($env:MVNW_VERBOSE -eq "true") {
-  $VerbosePreference = "Continue"
-}
-
-# calculate distributionUrl, requires .mvn/wrapper/maven-wrapper.properties
-$distributionUrl = (Get-Content -Raw "$scriptDir/.mvn/wrapper/maven-wrapper.properties" | ConvertFrom-StringData).distributionUrl
-if (!$distributionUrl) {
-  Write-Error "cannot read distributionUrl property in $scriptDir/.mvn/wrapper/maven-wrapper.properties"
-}
-
-switch -wildcard -casesensitive ( $($distributionUrl -replace '^.*/','') ) {
-  "maven-mvnd-*" {
-    $USE_MVND = $true
-    $distributionUrl = $distributionUrl -replace '-bin\.[^.]*$',"-windows-amd64.zip"
-    $MVN_CMD = "mvnd.cmd"
-    break
-  }
-  default {
-    $USE_MVND = $false
-    $MVN_CMD = $script -replace '^mvnw','mvn'
-    break
-  }
-}
-
-# apply MVNW_REPOURL and calculate MAVEN_HOME
-# maven home pattern: ~/.m2/wrapper/dists/{apache-maven-<version>,maven-mvnd-<version>-<platform>}/<hash>
-if ($env:MVNW_REPOURL) {
-  $MVNW_REPO_PATTERN = if ($USE_MVND -eq $False) { "/org/apache/maven/" } else { "/maven/mvnd/" }
-  $distributionUrl = "$env:MVNW_REPOURL$MVNW_REPO_PATTERN$($distributionUrl -replace "^.*$MVNW_REPO_PATTERN",'')"
-}
-$distributionUrlName = $distributionUrl -replace '^.*/',''
-$distributionUrlNameMain = $distributionUrlName -replace '\.[^.]*$','' -replace '-bin$',''
-
-$MAVEN_M2_PATH = "$HOME/.m2"
-if ($env:MAVEN_USER_HOME) {
-  $MAVEN_M2_PATH = "$env:MAVEN_USER_HOME"
-}
-
-if (-not (Test-Path -Path $MAVEN_M2_PATH)) {
-    New-Item -Path $MAVEN_M2_PATH -ItemType Directory | Out-Null
-}
-
-$MAVEN_WRAPPER_DISTS = $null
-if ((Get-Item $MAVEN_M2_PATH).Target[0] -eq $null) {
-  $MAVEN_WRAPPER_DISTS = "$MAVEN_M2_PATH/wrapper/dists"
-} else {
-  $MAVEN_WRAPPER_DISTS = (Get-Item $MAVEN_M2_PATH).Target[0] + "/wrapper/dists"
-}
-
-$MAVEN_HOME_PARENT = "$MAVEN_WRAPPER_DISTS/$distributionUrlNameMain"
-$MAVEN_HOME_NAME = ([System.Security.Cryptography.SHA256]::Create().ComputeHash([byte[]][char[]]$distributionUrl) | ForEach-Object {$_.ToString("x2")}) -join ''
-$MAVEN_HOME = "$MAVEN_HOME_PARENT/$MAVEN_HOME_NAME"
-
-if (Test-Path -Path "$MAVEN_HOME" -PathType Container) {
-  Write-Verbose "found existing MAVEN_HOME at $MAVEN_HOME"
-  Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
-  exit $?
-}
-
-if (! $distributionUrlNameMain -or ($distributionUrlName -eq $distributionUrlNameMain)) {
-  Write-Error "distributionUrl is not valid, must end with *-bin.zip, but found $distributionUrl"
-}
-
-# prepare tmp dir
-$TMP_DOWNLOAD_DIR_HOLDER = New-TemporaryFile
-$TMP_DOWNLOAD_DIR = New-Item -Itemtype Directory -Path "$TMP_DOWNLOAD_DIR_HOLDER.dir"
-$TMP_DOWNLOAD_DIR_HOLDER.Delete() | Out-Null
-trap {
-  if ($TMP_DOWNLOAD_DIR.Exists) {
-    try { Remove-Item $TMP_DOWNLOAD_DIR -Recurse -Force | Out-Null }
-    catch { Write-Warning "Cannot remove $TMP_DOWNLOAD_DIR" }
-  }
-}
-
-New-Item -Itemtype Directory -Path "$MAVEN_HOME_PARENT" -Force | Out-Null
-
-# Download and Install Apache Maven
-Write-Verbose "Couldn't find MAVEN_HOME, downloading and installing it ..."
-Write-Verbose "Downloading from: $distributionUrl"
-Write-Verbose "Downloading to: $TMP_DOWNLOAD_DIR/$distributionUrlName"
-
-$webclient = New-Object System.Net.WebClient
-if ($env:MVNW_USERNAME -and $env:MVNW_PASSWORD) {
-  $webclient.Credentials = New-Object System.Net.NetworkCredential($env:MVNW_USERNAME, $env:MVNW_PASSWORD)
-}
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$webclient.DownloadFile($distributionUrl, "$TMP_DOWNLOAD_DIR/$distributionUrlName") | Out-Null
-
-# If specified, validate the SHA-256 sum of the Maven distribution zip file
-$distributionSha256Sum = (Get-Content -Raw "$scriptDir/.mvn/wrapper/maven-wrapper.properties" | ConvertFrom-StringData).distributionSha256Sum
-if ($distributionSha256Sum) {
-  if ($USE_MVND) {
-    Write-Error "Checksum validation is not supported for maven-mvnd. `nPlease disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties."
-  }
-  Import-Module $PSHOME\Modules\Microsoft.PowerShell.Utility -Function Get-FileHash
-  if ((Get-FileHash "$TMP_DOWNLOAD_DIR/$distributionUrlName" -Algorithm SHA256).Hash.ToLower() -ne $distributionSha256Sum) {
-    Write-Error "Error: Failed to validate Maven distribution SHA-256, your Maven distribution might be compromised. If you updated your Maven version, you need to update the specified distributionSha256Sum property."
-  }
-}
-
-# unzip and move
-Expand-Archive "$TMP_DOWNLOAD_DIR/$distributionUrlName" -DestinationPath "$TMP_DOWNLOAD_DIR" | Out-Null
-
-# Find the actual extracted directory name (handles snapshots where filename != directory name)
-$actualDistributionDir = ""
-
-# First try the expected directory name (for regular distributions)
-$expectedPath = Join-Path "$TMP_DOWNLOAD_DIR" "$distributionUrlNameMain"
-$expectedMvnPath = Join-Path "$expectedPath" "bin/$MVN_CMD"
-if ((Test-Path -Path $expectedPath -PathType Container) -and (Test-Path -Path $expectedMvnPath -PathType Leaf)) {
-  $actualDistributionDir = $distributionUrlNameMain
-}
-
-# If not found, search for any directory with the Maven executable (for snapshots)
-if (!$actualDistributionDir) {
-  Get-ChildItem -Path "$TMP_DOWNLOAD_DIR" -Directory | ForEach-Object {
-    $testPath = Join-Path $_.FullName "bin/$MVN_CMD"
-    if (Test-Path -Path $testPath -PathType Leaf) {
-      $actualDistributionDir = $_.Name
-    }
-  }
-}
-
-if (!$actualDistributionDir) {
-  Write-Error "Could not find Maven distribution directory in extracted archive"
-}
-
-Write-Verbose "Found extracted Maven distribution directory: $actualDistributionDir"
-Rename-Item -Path "$TMP_DOWNLOAD_DIR/$actualDistributionDir" -NewName $MAVEN_HOME_NAME | Out-Null
-try {
-  Move-Item -Path "$TMP_DOWNLOAD_DIR/$MAVEN_HOME_NAME" -Destination $MAVEN_HOME_PARENT | Out-Null
-} catch {
-  if (! (Test-Path -Path "$MAVEN_HOME" -PathType Container)) {
-    Write-Error "fail to move MAVEN_HOME"
-  }
-} finally {
-  try { Remove-Item $TMP_DOWNLOAD_DIR -Recurse -Force | Out-Null }
-  catch { Write-Warning "Cannot remove $TMP_DOWNLOAD_DIR" }
-}
-
-Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
-
-================
-File: src/main/java/com/chobbi/server/catalog/dto/CreateProductAttributeDto.java
-================
-package com.chobbi.server.catalog.dto;
-
-import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class CreateProductAttributeDto {
-    @NotNull
-    private Long id;
-    private List<Long> valueIds;
-    private List<@NotBlank String> customValues;
+public enum StatusEnums {
+    ACTIVE,
+    INACTIVE,
 }
 
 ================
@@ -5979,166 +6697,6 @@ public class CreateProductRequest {
     @Valid
     @Size(min = 1, max = 50)
     private List<CreateProductVariationDto> variations;
-}
-
-================
-File: src/main/java/com/chobbi/server/catalog/dto/CreateProductVariationDto.java
-================
-package com.chobbi.server.catalog.dto;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class CreateProductVariationDto {
-    private BigDecimal price;
-    private Integer stock;
-    private String img;
-    @Valid
-    @Size(max = 2)
-    private List<CreateProductRequestOptionCombination> optionCombination;
-}
-
-================
-File: src/main/java/com/chobbi/server/catalog/entity/AttributesEntity.java
-================
-package com.chobbi.server.catalog.entity;
-
-import com.chobbi.server.catalog.enums.AttributeTypesEnums;
-import com.chobbi.server.common.BaseEntity;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.ArrayList;
-import java.util.List;
-
-@Getter
-@Setter
-@Entity(name = "attributes")
-public class AttributesEntity extends BaseEntity {
-    private String name;
-    @Column(name = "is_required")
-    private Boolean isRequired;
-    @Column(name = "is_custom_allow")
-    private Boolean isCustomAllow;
-    @Column(name = "is_multiple_allow")
-    private Boolean isMultipleAllow;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private AttributeTypesEnums type;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private CategoryEntity categoryEntity;
-
-    @OneToMany(mappedBy = "attributesEntity", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AttributeValuesEntity> attributeValues = new ArrayList<>();
-
-    @OneToMany(mappedBy = "attributesEntity")
-    private List<ProductAttributesEntity> productAttributes = new ArrayList<>();
-}
-
-================
-File: src/main/java/com/chobbi/server/catalog/entity/AttributeValuesEntity.java
-================
-package com.chobbi.server.catalog.entity;
-
-import com.chobbi.server.common.BaseEntity;
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-@Getter
-@Setter
-@Entity(name = "attribute_values")
-public class AttributeValuesEntity extends BaseEntity {
-    @Column(name = "is_custom")
-    private Boolean isCustom;
-    @Column(name = "value_text")
-    private String valueText;
-    @Column(name = "value_number")
-    private Double valueNumber;
-    @Column(name = "value_boolean")
-    private Boolean valueBoolean;
-    @Column(name = "value_date")
-    private LocalDate valueDate;
-    @ManyToOne
-    @JoinColumn(name = "attribute_id")
-    private AttributesEntity attributesEntity;
-    @OneToMany(mappedBy = "attributeValuesEntity")
-    private List<ProductAttributesEntity> productAttributes = new ArrayList<>();
-}
-
-================
-File: src/main/java/com/chobbi/server/catalog/entity/CategoryEntity.java
-================
-package com.chobbi.server.catalog.entity;
-
-import com.chobbi.server.common.BaseEntity;
-import jakarta.persistence.*;
-import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
-
-@Data
-@Entity(name = "category")
-public class CategoryEntity extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    private Long parentId;
-    @OneToMany(mappedBy = "categoryEntity")
-    private List<ProductEntity> productEntities = new ArrayList<>();
-    @OneToMany(mappedBy = "categoryEntity", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AttributesEntity> attributes = new ArrayList<>();
-}
-
-================
-File: src/main/java/com/chobbi/server/catalog/entity/ProductAttributesEntity.java
-================
-package com.chobbi.server.catalog.entity;
-
-import com.chobbi.server.common.BaseEntity;
-import jakarta.persistence.*;
-import lombok.Data;
-
-@Data
-@Entity(name = "product_attributes")
-public class ProductAttributesEntity extends BaseEntity {
-
-    @ManyToOne
-    @JoinColumn(name = "product_id")
-    private ProductEntity productEntity;
-
-    @ManyToOne
-    @JoinColumn(name = "attribute_id")
-    private AttributesEntity attributesEntity;
-
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "attribute_value_id")
-    private AttributeValuesEntity attributeValuesEntity;
-
 }
 
 ================
@@ -6349,111 +6907,23 @@ File: src/main/java/com/chobbi/server/catalog/create_product.json
 }
 
 ================
-File: src/main/java/com/chobbi/server/controller/CartController.java
+File: src/main/java/com/chobbi/server/entity/AccountEntity.java
 ================
+package com.chobbi.server.entity;
 
-
-================
-File: src/main/java/com/chobbi/server/dto/ProductDto.java
-================
-package com.chobbi.server.dto;
-
-import lombok.AllArgsConstructor;
+import com.chobbi.server.common.BaseEntity;
+import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class ProductDto {
+@Entity(name = "account")
+public class AccountEntity extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String email;
     private String name;
-    private List<TierDto> tiers = new ArrayList<>();
-    private List<VariationDto> variations = new ArrayList<>();
-    private List<CategoryDto> categories  = new ArrayList<>();
-}
-
-================
-File: src/main/java/com/chobbi/server/entity/CartEntity.java
-================
-package com.chobbi.server.entity;
-
-import com.chobbi.server.common.BaseEntity;
-import jakarta.persistence.*;
-import lombok.Data;
-
-@Data
-@Entity(name = "cart")
-public class CartEntity extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @OneToOne
-    @JoinColumn(name = "account_id")
-    private AccountEntity accountEntity;
-}
-
-================
-File: src/main/java/com/chobbi/server/entity/CartVariationEntity.java
-================
-package com.chobbi.server.entity;
-
-import com.chobbi.server.catalog.entity.VariationEntity;
-import com.chobbi.server.common.BaseEntity;
-import jakarta.persistence.*;
-import lombok.Data;
-
-import java.math.BigDecimal;
-
-@Data
-@Entity(name = "cart_variation")
-public class CartVariationEntity extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private Integer quantity;
-    @Column(name = "price_at_time")
-    private BigDecimal priceAtTime;
-
-    @ManyToOne
-    @JoinColumn(name = "cart_id")
-    private CartEntity cartEntity;
-
-    @ManyToOne
-    @JoinColumn(name = "variation_id")
-    private VariationEntity variationEntity;
-}
-
-================
-File: src/main/java/com/chobbi/server/entity/RolesEntity.java
-================
-package com.chobbi.server.entity;
-
-import com.chobbi.server.common.BaseEntity;
-import jakarta.persistence.*;
-import lombok.Data;
-
-@Data
-@Entity(name = "roles")
-public class RolesEntity extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-}
-
-================
-File: src/main/java/com/chobbi/server/enums/StatusEnums.java
-================
-package com.chobbi.server.enums;
-
-public enum StatusEnums {
-    ACTIVE,
-    INACTIVE,
+    private String pwd;
 }
 
 ================
@@ -6477,8 +6947,8 @@ public class ProductController {
     private final ProductServices productServices;
 
 //    @GetMapping(params = {"shopId", "productId"})
-//    public ResponseEntity<?> getProduct(@RequestParam Long shopId, @RequestParam Long productId) {
-//        return ResponseEntity.ok(productServices.getProduct(shopId, productId));
+//    public ResponseEntity<?> readProduct(@RequestParam Long shopId, @RequestParam Long productId) {
+//        return ResponseEntity.ok(productServices.readProduct(shopId, productId));
 //    }
 
     @PostMapping(
@@ -6493,8 +6963,9 @@ public class ProductController {
         return ResponseEntity.ok("ok");
     }
     @GetMapping(params = "productId")
-    public ResponseEntity<?> getProduct(@RequestParam Long productId) {
-        return ResponseEntity.ok("ffff");
+    public ResponseEntity<?> readProduct(@RequestParam Long productId) {
+        ;
+        return ResponseEntity.ok(productServices.readProduct(productId));
     }
 //    @PostMapping("/update")
 //    public ResponseEntity<?> updateProduct(@RequestBody ProductRequest productRequest) {
@@ -6507,23 +6978,31 @@ public class ProductController {
 }
 
 ================
-File: src/main/java/com/chobbi/server/entity/AccountEntity.java
+File: src/main/java/com/chobbi/server/entity/ShopEntity.java
 ================
 package com.chobbi.server.entity;
 
+import com.chobbi.server.catalog.entity.ProductEntity;
 import com.chobbi.server.common.BaseEntity;
+import com.chobbi.server.enums.StatusEnums;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
-@Entity(name = "account")
-public class AccountEntity extends BaseEntity {
+@Entity(name = "shop")
+public class ShopEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String email;
     private String name;
-    private String pwd;
+    @OneToMany(mappedBy = "shopEntity")
+    private List<ProductEntity> products = new ArrayList<>();
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private StatusEnums status = StatusEnums.ACTIVE;
 }
 
 ================
@@ -6560,34 +7039,6 @@ logging:
 file:
   root-path: /Users/matthew777/Desktop/spring-upload-demo
   base-domain: http://localhost:9090/static
-
-================
-File: src/main/java/com/chobbi/server/entity/ShopEntity.java
-================
-package com.chobbi.server.entity;
-
-import com.chobbi.server.catalog.entity.ProductEntity;
-import com.chobbi.server.common.BaseEntity;
-import com.chobbi.server.enums.StatusEnums;
-import jakarta.persistence.*;
-import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
-
-@Data
-@Entity(name = "shop")
-public class ShopEntity extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    @OneToMany(mappedBy = "shopEntity")
-    private List<ProductEntity> products = new ArrayList<>();
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private StatusEnums status = StatusEnums.ACTIVE;
-}
 
 ================
 File: pom.xml
