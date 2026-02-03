@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReadProductImageDto {
+public class ProductTierOptionDto {
     private Long id;
-    private String url;
-    private Integer sort;
+    private String name;
 }

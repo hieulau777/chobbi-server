@@ -8,9 +8,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateProductRequestOptionCombination {
+public class ProductRequestOptionCombination {
+    Long tierId;
     @NotBlank
     private String tierName;
+    Long optionId;
     @NotBlank
     private String optionName;
 }

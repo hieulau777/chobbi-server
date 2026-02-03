@@ -1,150 +1,85 @@
 {
+  "id": 100, // ID của chính sản phẩm
   "name": "Áo thun Zara",
   "shopId": 1,
   "categoryId": 3,
   "description": "dfdfdf",
   "images": [
     {
+      "id": 501, // ID ảnh cũ để giữ nguyên hoặc update order
       "name": "IMG_3932.PNG",
       "order": 1
     },
     {
-      "name": "IMG_3828.JPG",
+      "name": "IMG_NEW.JPG", // Không có ID = Ảnh mới thêm vào
       "order": 2
     }
   ],
   "attributes": [
     {
-      "id": 1,
+      "id": 1, // ID của Attribute (Ví dụ: Chất liệu)
       "valueIds": [1]
-    },
-    {
-      "id": 2,
-      "valueIds": [5]
-    },
-    {
-      "id": 3,
-      "valueIds": [10, 11],
-      "customValues": ["Cotton Custom", "Linen Custom"]
-    },
-    {
-      "id": 4,
-      "customValues": ["2026-01-06"]
     }
+    // ... các attribute khác
   ],
   "tiers": [
     {
+      "id": 10, // Tier ID (Màu sắc)
       "name": "Màu sắc",
-      "options": ["Trắng", "Đỏ"],
+      "options": [
+        { "id": 101, "name": "Trắng" }, // Option cũ có ID
+        { "id": 102, "name": "Đỏ" },
+        { "name": "Xanh" } // Không ID = Thêm mới option vào Tier cũ
+      ],
       "hasImages": true
     },
     {
+      "id": 11, // Tier ID (Kích thước)
       "name": "Kích thước",
-      "options": ["S", "M", "L"],
+      "options": [
+        { "id": 201, "name": "S" },
+        { "id": 202, "name": "M" },
+        { "id": 203, "name": "L" }
+      ],
       "hasImages": false
     }
   ],
   "optionImages": [
     {
+      "tierId": 10, // Dùng ID để match cho chắc chắn
+      "optionId": 101,
       "tierName": "Màu sắc",
       "optionName": "Trắng",
       "imageName": "IMG_3824.JPG"
-    },
-    {
-      "tierName": "Màu sắc",
-      "optionName": "Đỏ",
-      "imageName": "IMG_3825.JPG"
     }
   ],
   "variations": [
     {
+      "id": 1001, // Cực kỳ quan trọng: ID của biến thể cũ để update price/stock
       "price": 10000,
       "stock": 10,
       "img": "img/trang-s.jpg",
       "optionCombination": [
         {
+          "tierId": 10, // Map lồng map sẽ dùng cái này để validate
+          "optionId": 101,
           "tierName": "Màu sắc",
           "optionName": "Trắng"
         },
         {
+          "tierId": 11,
+          "optionId": 201,
           "tierName": "Kích thước",
           "optionName": "S"
         }
       ]
     },
     {
-      "price": 10000,
-      "stock": 10,
-      "img": "img/trang-m.jpg",
+      "price": 12000, // Không có ID = Đây là biến thể mới sinh ra do thêm option "Xanh" ở trên
+      "stock": 5,
       "optionCombination": [
-        {
-          "tierName": "Màu sắc",
-          "optionName": "Trắng"
-        },
-        {
-          "tierName": "Kích thước",
-          "optionName": "M"
-        }
-      ]
-    },
-    {
-      "price": 10000,
-      "stock": 10,
-      "img": "img/trang-l.jpg",
-      "optionCombination": [
-        {
-          "tierName": "Màu sắc",
-          "optionName": "Trắng"
-        },
-        {
-          "tierName": "Kích thước",
-          "optionName": "L"
-        }
-      ]
-    },
-    {
-      "price": 10000,
-      "stock": 10,
-      "img": "img/do-s.jpg",
-      "optionCombination": [
-        {
-          "tierName": "Màu sắc",
-          "optionName": "Đỏ"
-        },
-        {
-          "tierName": "Kích thước",
-          "optionName": "S"
-        }
-      ]
-    },
-    {
-      "price": 10000,
-      "stock": 10,
-      "img": "img/do-m.jpg",
-      "optionCombination": [
-        {
-          "tierName": "Màu sắc",
-          "optionName": "Đỏ"
-        },
-        {
-          "tierName": "Kích thước",
-          "optionName": "M"
-        }
-      ]
-    },
-    {
-      "price": 10000,
-      "stock": 10,
-      "img": "img/do-l.jpg",
-      "optionCombination": [
-        {
-          "tierName": "Màu sắc",
-          "optionName": "Đỏ"
-        },
-        {
-          "tierName": "Kích thước",
-          "optionName": "L"
-        }
+        { "tierId": 10, "optionId": null, "tierName": "Màu sắc", "optionName": "Xanh" },
+        { "tierId": 11, "optionId": 201, "tierName": "Kích thước", "optionName": "S" }
       ]
     }
   ]

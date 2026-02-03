@@ -1,5 +1,6 @@
 package com.chobbi.server.catalog.entity;
 
+import com.chobbi.server.cart.entity.CartVariationEntity;
 import com.chobbi.server.common.BaseEntity;
 import com.chobbi.server.enums.StatusEnums;
 import jakarta.persistence.*;
@@ -33,6 +34,9 @@ public class VariationEntity extends BaseEntity {
 
     @OneToMany(mappedBy = "variationEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VariationOptionEntity> variationOptions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "variationEntity")
+    private List<CartVariationEntity> cartVariations = new ArrayList<>();
 
 //    @Enumerated(EnumType.STRING)
 //    @Column(nullable = false, length = 20)

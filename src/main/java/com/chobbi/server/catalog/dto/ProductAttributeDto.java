@@ -5,14 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateProductAttributeDto {
+public class ProductAttributeDto {
     @NotNull
     private Long id;
-    private List<Long> valueIds;
-    private List<@NotBlank String> customValues;
+    private List<Long> valueIds = new ArrayList<>();
+    private List<@NotBlank String> customValues = new ArrayList<>();
 }

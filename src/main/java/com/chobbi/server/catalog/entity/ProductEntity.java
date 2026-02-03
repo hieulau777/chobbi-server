@@ -40,7 +40,7 @@ public class ProductEntity extends BaseEntity {
     @OneToMany(mappedBy = "productEntity", cascade = CascadeType.ALL)
     private List<TierEntity> tiers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "productEntity", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "productEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductAttributesEntity> productAttributes = new ArrayList<>();
 
     @OneToMany(mappedBy = "productEntity", cascade = CascadeType.ALL)

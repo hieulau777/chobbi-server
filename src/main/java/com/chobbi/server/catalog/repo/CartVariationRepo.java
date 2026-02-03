@@ -1,7 +1,7 @@
 package com.chobbi.server.catalog.repo;
 
-import com.chobbi.server.entity.CartEntity;
-import com.chobbi.server.entity.CartVariationEntity;
+import com.chobbi.server.cart.entity.CartEntity;
+import com.chobbi.server.cart.entity.CartVariationEntity;
 import com.chobbi.server.catalog.entity.VariationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 

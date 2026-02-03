@@ -12,11 +12,12 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateProductTierDto {
+public class ProductTierDto {
+    private Long id;
     @NotBlank
     private String name;
     @NotEmpty
-    private List<@NotBlank String> options;
+    private List<ProductTierOptionDto> options;
     @NotNull
     private Boolean hasImages;
 }

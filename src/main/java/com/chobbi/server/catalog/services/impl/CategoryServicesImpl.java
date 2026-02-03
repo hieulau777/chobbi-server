@@ -1,6 +1,8 @@
 package com.chobbi.server.catalog.services.impl;
 
 import com.chobbi.server.catalog.dto.CategoryDto;
+import com.chobbi.server.catalog.dto.ReadProductAttributeValueDto;
+import com.chobbi.server.catalog.dto.ReadProductAttributes;
 import com.chobbi.server.catalog.entity.CategoryEntity;
 import com.chobbi.server.catalog.services.CategoryServices;
 import com.chobbi.server.catalog.repo.CategoryRepo;
@@ -46,6 +48,37 @@ public class CategoryServicesImpl implements CategoryServices {
 
         // 3. Đúng là Leaf thì trả về luôn để sử dụng
         return category;
+    }
+
+    @Override
+    public List<ReadProductAttributes> getAttributes(Long categoryId) {
+        CategoryEntity category = getLeafCategoryOrThrow(categoryId);
+        return category.getAttributes().stream()
+                .map(attr -> {
+                    List<ReadProductAttributeValueDto> valueDtos = attr.getAttributeValues().stream()
+                            .filter(val -> !val.getIsCustom())
+                            .map(val -> {
+                                String displayValue = switch (attr.getType()) {
+                                    case TEXT -> val.getValueText();
+                                    case NUMBER -> String.valueOf(val.getValueNumber());
+                                    case BOOLEAN -> String.valueOf(val.getValueBoolean());
+                                    case DATE -> String.valueOf(val.getValueDate());
+                                };
+                                return new ReadProductAttributeValueDto(val.getId(), displayValue);
+                            })
+                            .toList();
+
+                    return new ReadProductAttributes(
+                            attr.getId(),
+                            attr.getName(),
+                            attr.getIsRequired(),
+                            attr.getIsCustomAllow(),
+                            attr.getIsMultipleAllow(),
+                            attr.getType().name(),
+                            valueDtos
+                    );
+                })
+                .toList();
     }
 
     /**

@@ -1806,7 +1806,7 @@ public interface FilesStorageService {
 <file path="src/main/java/com/chobbi/server/repo/AccountRepo.java">
 package com.chobbi.server.repo;
 
-import com.chobbi.server.entity.AccountEntity;
+import com.chobbi.server.account.entity.AccountEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AccountRepo extends JpaRepository<AccountEntity, Long> {
@@ -1836,7 +1836,7 @@ public interface AttributeValuesRepo extends JpaRepository<AttributeValuesEntity
 <file path="src/main/java/com/chobbi/server/repo/CartRepo.java">
 package com.chobbi.server.repo;
 
-import com.chobbi.server.entity.CartEntity;
+import com.chobbi.server.cart.entity.CartEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -2894,8 +2894,8 @@ public enum StatusEnums {
 <file path="src/main/java/com/chobbi/server/repo/CartVariationRepo.java">
 package com.chobbi.server.repo;
 
-import com.chobbi.server.entity.CartEntity;
-import com.chobbi.server.entity.CartVariationEntity;
+import com.chobbi.server.cart.entity.CartEntity;
+import com.chobbi.server.cart.entity.CartVariationEntity;
 import com.chobbi.server.catalog.entity.VariationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 

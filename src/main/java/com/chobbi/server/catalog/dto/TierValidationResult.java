@@ -7,10 +7,10 @@ import java.util.Set;
 
 @Getter
 public class TierValidationResult {
-    private final Map<String, Set<String>> normalizedTierOptions;
+    private final Map<String, ProcessedTier> normalizedTierOptions;
     private final int countCartesian;
 
-    public TierValidationResult(Map<String, Set<String>> normalizedTierOptions, int countCartesian) {
+    public TierValidationResult(Map<String, ProcessedTier> normalizedTierOptions, int countCartesian) {
         this.normalizedTierOptions = normalizedTierOptions;
         this.countCartesian = countCartesian;
     }

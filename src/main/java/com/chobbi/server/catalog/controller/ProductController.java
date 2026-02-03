@@ -1,6 +1,7 @@
 package com.chobbi.server.catalog.controller;
 
 import com.chobbi.server.catalog.dto.CreateProductRequest;
+import com.chobbi.server.catalog.dto.ProductRequest;
 import com.chobbi.server.catalog.services.ProductServices;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,23 +26,27 @@ public class ProductController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     public ResponseEntity<?> createProduct(
-            @RequestPart("product") @Valid CreateProductRequest productRequest,
-            @RequestPart(value = "images", required = false) MultipartFile[] media
+            @RequestPart("product") @Valid ProductRequest productRequest,
+            @RequestPart(value = "media", required = false) MultipartFile[] media
     ) {
         productServices.createProduct(productRequest, media);
         return ResponseEntity.ok("ok");
     }
+
     @GetMapping(params = "productId")
     public ResponseEntity<?> readProduct(@RequestParam Long productId) {
-        ;
         return ResponseEntity.ok(productServices.readProduct(productId));
     }
-//    @PostMapping("/update")
-//    public ResponseEntity<?> updateProduct(@RequestBody ProductRequest productRequest) {
-//        return ResponseEntity.ok(productServices.updateProduct(productRequest));
-//    }
-//    @PostMapping("/delete")
-//    public void deleteProduct(@RequestParam Long shopId, @RequestParam Long productId) {
-//        productServices.deleteProduct(shopId, productId);
-//    }
+
+    @PostMapping(
+            value = "/update",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<?> updateProduct(
+            @RequestPart("product") @Valid ProductRequest productRequest,
+            @RequestPart(value = "media", required = false) MultipartFile[] media
+    ) {
+        productServices.updateProduct(productRequest, media);
+        return ResponseEntity.ok("ok");
+    }
 }
