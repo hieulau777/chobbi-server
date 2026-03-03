@@ -1,4 +1,5 @@
 HELP.md
+sql.txt
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -31,3 +32,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# SQL scripts & seed data (local only)
+attribute-sql.txt
+category_sql.txt
+*_seed_*.sql
+*seed*.sql
+product_seed_*.json
+seed-data/

@@ -17,10 +17,24 @@ spring:
 #      hibernate:
 #        format_sql: true
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+      timeout: 3000ms
+      password: ${REDIS_PASSWORD:admin123redis}
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://root:admin123mongo@localhost:27017/chobbi?authSource=admin}
+
   servlet:
     multipart:
       max-file-size: 11MB
       max-request-size: 120MB
+
+jwt:
+  secret: ${JWT_SECRET:your-256-bit-secret-key-change-in-production-must-be-long-enough}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
 logging:
   level:
@@ -29,5 +43,3 @@ logging:
 file:
   root-path: /Users/matthew777/Desktop/spring-upload-demo
   base-domain: http://localhost:9090/static
-
-

@@ -1,5 +1,6 @@
 package com.chobbi.server.catalog.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,10 @@ public class ProductRequest {
     private String name;
     @NotBlank
     private String description;
+
+    @NotNull(message = "Trọng lượng sản phẩm là bắt buộc")
+    @Min(value = 0, message = "Trọng lượng phải >= 0 (gram)")
+    private Long weight;
 
     private List<ProductImageDto> images; // Case 1 & 2 của Images
     private List<ProductAttributeDto> attributes; // Tái sử dụng Create DTO [13, 14]

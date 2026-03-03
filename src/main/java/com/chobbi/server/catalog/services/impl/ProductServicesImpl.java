@@ -4,11 +4,13 @@ import com.chobbi.server.catalog.domain.AttributesRule;
 import com.chobbi.server.catalog.dto.*;
 import com.chobbi.server.catalog.entity.*;
 import com.chobbi.server.catalog.enums.AttributeTypesEnums;
+import com.chobbi.server.catalog.enums.StatusEnums;
 import com.chobbi.server.catalog.repo.*;
+import com.chobbi.server.shop.repo.ShopRepo;
 import com.chobbi.server.catalog.services.CategoryServices;
 import com.chobbi.server.catalog.services.ProductServices;
 import com.chobbi.server.common.BaseEntity;
-import com.chobbi.server.entity.ShopEntity;
+import com.chobbi.server.shop.entity.ShopEntity;
 import com.chobbi.server.exception.BusinessException;
 import com.chobbi.server.storage.FolderTypeEnum;
 import com.chobbi.server.storage.services.FilesStorageService;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -72,6 +75,40 @@ public class ProductServicesImpl implements ProductServices {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ReadProductSellerDto> listProductsByShopId(Long shopId) {
+        List<ProductEntity> products = productRepo.findAllByShopEntity_IdAndDeletedAtIsNull(shopId);
+        return products.stream()
+                .map(this::toReadProductSellerDto)
+                .toList();
+    }
+
+    private ReadProductSellerDto toReadProductSellerDto(ProductEntity p) {
+        ReadProductSellerDto dto = new ReadProductSellerDto();
+        dto.setId(p.getId());
+        dto.setImg(p.getThumbnail());
+        dto.setName(p.getName());
+        dto.setVariations(
+                p.getVariations().stream()
+                        .filter(v -> v.getDeletedAt() == null)
+                        .map(this::toReadProductVariationSellerDto)
+                        .toList()
+        );
+        return dto;
+    }
+
+    private ReadProductVariationSellerDto toReadProductVariationSellerDto(VariationEntity v) {
+        String name = v.getVariationOptions().stream()
+                .filter(vo -> vo.getDeletedAt() == null && vo.getOptionsEntity() != null)
+                .map(vo -> vo.getOptionsEntity().getName())
+                .collect(Collectors.joining(" / "));
+        if (name.isEmpty()) {
+            name = "Default";
+        }
+        return new ReadProductVariationSellerDto(name, v.getPrice(), v.getStock());
+    }
+
+    @Override
     public ReadProductDto readProduct(Long productId) {
         ProductEntity product = productRepo.findByIdAndDeletedAtIsNull(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -80,6 +117,7 @@ public class ProductServicesImpl implements ProductServices {
         dto.setProductId(product.getId());
         dto.setProductName(product.getName());
         dto.setDescription(product.getDescription());
+        dto.setWeight(product.getWeight());
 
         dto.setImages(product.getProductImages().stream()
                 .filter(img -> img.getDeletedAt() == null)
@@ -118,6 +156,7 @@ public class ProductServicesImpl implements ProductServices {
                 .filter(v -> v.getDeletedAt() == null)
                 .map(v -> {
                     ReadProductVariationDto vDto = new ReadProductVariationDto();
+                    vDto.setId(v.getId());
                     vDto.setPrice(v.getPrice());
                     vDto.setStock(v.getStock());
 
@@ -182,6 +221,202 @@ public class ProductServicesImpl implements ProductServices {
     }
 
     @Override
+    public ReadProductClientDto getProductDetailClient(Long productId) {
+        // Tái sử dụng DTO readProduct, sau đó rút gọn attributes cho client:
+        // chỉ giữ những attribute đã được set, với name + value hiển thị.
+        ReadProductDto base = readProduct(productId);
+
+        List<ClientProductAttributeDto> clientAttrs = new ArrayList<>();
+
+        if (base.getAttributes() != null && base.getSelectedAttributes() != null) {
+            // Map attrId -> selectedValueIds
+            Map<Long, List<Long>> selectedMap = base.getSelectedAttributes().stream()
+                    .collect(Collectors.toMap(
+                            ReadProductSelectedAttributes::getId,
+                            ReadProductSelectedAttributes::getSelectedValueIds
+                    ));
+
+            for (ReadProductAttributes attr : base.getAttributes()) {
+                List<Long> selectedIds = selectedMap.get(attr.getId());
+                if (selectedIds == null || selectedIds.isEmpty()) {
+                    // Chỉ lấy attribute đã được set
+                    continue;
+                }
+
+                List<String> values = attr.getValues().stream()
+                        .filter(v -> selectedIds.contains(v.getId()))
+                        .map(ReadProductAttributeValueDto::getValue)
+                        .toList();
+
+                if (values.isEmpty()) {
+                    continue;
+                }
+
+                String joined = String.join(", ", values);
+                clientAttrs.add(new ClientProductAttributeDto(attr.getName(), joined));
+            }
+        }
+
+        ReadProductClientDto dto = new ReadProductClientDto();
+        dto.setProductId(base.getProductId());
+        dto.setProductName(base.getProductName());
+        dto.setDescription(base.getDescription());
+        dto.setWeight(base.getWeight());
+        dto.setImages(base.getImages());
+        dto.setTiers(base.getTiers());
+        dto.setOptionImages(base.getOptionImages());
+        dto.setAttributes(clientAttrs);
+        dto.setCategoryTree(base.getCategoryTree());
+        dto.setSelectedCategoryId(base.getSelectedCategoryId());
+        dto.setVariations(base.getVariations());
+        return dto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductCardDto> listProductsByCategoryId(Long categoryId) {
+        return listProductsByCategoryId(categoryId, null, null, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductCardDto> listProductsByCategoryId(Long categoryId, BigDecimal minPrice, BigDecimal maxPrice) {
+        return listProductsByCategoryId(categoryId, minPrice, maxPrice, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductCardDto> listProductsByCategoryId(Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, List<Long> brandValueIds) {
+        // Cho phép category bất kỳ (cha hoặc lá):
+        // - Lấy chính category đó và toàn bộ con cháu bên dưới
+        // - Lấy tất cả sản phẩm thuộc các category này
+
+        CategoryEntity rootCategory = categoryRepo.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        List<CategoryEntity> descendants = categoryRepo.findAllDescendants(categoryId);
+
+        List<Long> categoryIds = new ArrayList<>();
+        if (rootCategory.getDeletedAt() == null) {
+            categoryIds.add(rootCategory.getId());
+        }
+        if (descendants != null) {
+            descendants.stream()
+                    .filter(c -> c.getDeletedAt() == null)
+                    .map(CategoryEntity::getId)
+                    .forEach(categoryIds::add);
+        }
+
+        if (categoryIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<ProductEntity> products = productRepo
+                .findByCategoryEntity_IdInAndDeletedAtIsNullAndStatus(categoryIds, StatusEnums.ACTIVE);
+
+        Set<Long> brandIdSet = (brandValueIds == null || brandValueIds.isEmpty())
+                ? null
+                : new HashSet<>(brandValueIds);
+
+        return products.stream()
+                .filter(p -> {
+                    BigDecimal price = p.getVariations().stream()
+                            .filter(v -> v.getDeletedAt() == null && v.getPrice() != null)
+                            .map(VariationEntity::getPrice)
+                            .min(BigDecimal::compareTo)
+                            .orElse(null);
+
+                    if (price == null) {
+                        return false;
+                    }
+
+                    boolean okMin = (minPrice == null) || price.compareTo(minPrice) >= 0;
+                    boolean okMax = (maxPrice == null) || price.compareTo(maxPrice) <= 0;
+                    if (!okMin || !okMax) {
+                        return false;
+                    }
+
+                    if (brandIdSet == null) {
+                        return true;
+                    }
+
+                    return p.getProductAttributes().stream()
+                            .filter(pa -> pa.getAttributesEntity() != null && pa.getAttributeValuesEntity() != null)
+                            .anyMatch(pa ->
+                                    pa.getAttributesEntity().getName() != null
+                                            && pa.getAttributesEntity().getName().equalsIgnoreCase("Thương hiệu")
+                                            && brandIdSet.contains(pa.getAttributeValuesEntity().getId())
+                            );
+                })
+                .map(this::toProductCardDto)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReadProductAttributeValueDto> listBrandsForCategoryBranch(Long categoryId) {
+        CategoryEntity rootCategory = categoryRepo.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        List<CategoryEntity> descendants = categoryRepo.findAllDescendants(categoryId);
+
+        List<CategoryEntity> branch = new ArrayList<>();
+        branch.add(rootCategory);
+        if (descendants != null) {
+            branch.addAll(descendants);
+        }
+
+        List<Long> leafCategoryIds = branch.stream()
+                .filter(c -> c.getDeletedAt() == null)
+                .filter(c -> !categoryRepo.existsByParentId(c.getId()))
+                .map(CategoryEntity::getId)
+                .distinct()
+                .toList();
+
+        if (leafCategoryIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<AttributesEntity> brandAttributes = attributesRepo
+                .findByCategoryEntity_IdInAndNameIgnoreCaseAndDeletedAtIsNull(leafCategoryIds, "Thương hiệu");
+
+        Map<Long, ReadProductAttributeValueDto> result = new LinkedHashMap<>();
+
+        for (AttributesEntity attr : brandAttributes) {
+            for (AttributeValuesEntity val : attr.getAttributeValues()) {
+                if (Boolean.TRUE.equals(val.getIsCustom())) {
+                    continue;
+                }
+                if (val.getDeletedAt() != null) {
+                    continue;
+                }
+                String displayValue = val.getValueText();
+                if (displayValue == null || displayValue.isBlank()) {
+                    continue;
+                }
+                result.putIfAbsent(val.getId(), new ReadProductAttributeValueDto(val.getId(), displayValue));
+            }
+        }
+
+        return new ArrayList<>(result.values());
+    }
+
+    private ProductCardDto toProductCardDto(ProductEntity p) {
+        BigDecimal price = p.getVariations().stream()
+                .filter(v -> v.getDeletedAt() == null && v.getPrice() != null)
+                .map(VariationEntity::getPrice)
+                .min(BigDecimal::compareTo)
+                .orElse(null);
+        return new ProductCardDto(
+                p.getId(),
+                p.getShopEntity() != null ? p.getShopEntity().getId() : null,
+                p.getName(),
+                p.getThumbnail(),
+                price
+        );
+    }
+
+    @Override
     @Transactional
     public void updateProduct(ProductRequest req, MultipartFile[] media) {
         ProductEntity product = productRepo.findByIdAndDeletedAtIsNull(req.getProductId())
@@ -189,6 +424,7 @@ public class ProductServicesImpl implements ProductServices {
 
         product.setName(req.getName());
         product.setDescription(req.getDescription());
+        product.setWeight(req.getWeight() != null ? req.getWeight() : 0L);
 
         product.getProductAttributes().clear();
         CategoryEntity category = categoryRepo.findById(req.getCategoryId())
@@ -237,6 +473,7 @@ public class ProductServicesImpl implements ProductServices {
         product.setShopEntity(shopEntity);
         product.setCategoryEntity(categoryEntity);
         product.setDescription(req.getDescription());
+        product.setWeight(req.getWeight() != null ? req.getWeight() : 0L);
         return product;
     }
 

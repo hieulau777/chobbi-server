@@ -1,7 +1,9 @@
 package com.chobbi.server.catalog.dto;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +19,10 @@ public class CreateProductRequest {
     private String name;
     private String description;
     private Long categoryId;
+
+    @NotNull(message = "Trọng lượng sản phẩm là bắt buộc")
+    @Min(value = 0, message = "Trọng lượng phải >= 0 (gram)")
+    private Long weight;
     @Size(min = 1, max = 9)
     private List<CreateProductImages> images;
     @NotEmpty

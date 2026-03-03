@@ -18,6 +18,6 @@ public class CartEntity extends BaseEntity {
     @JoinColumn(name = "account_id")
     private AccountEntity accountEntity;
 
-    @OneToMany(mappedBy = "variationEntity", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "cartEntity", cascade = CascadeType.ALL)
     private List<CartVariationEntity> cartVariations = new ArrayList<>();
 }

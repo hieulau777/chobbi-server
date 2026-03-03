@@ -1,12 +1,10 @@
 package com.chobbi.server.catalog.entity;
 
 import com.chobbi.server.common.BaseEntity;
-import com.chobbi.server.entity.ShopEntity;
-import com.chobbi.server.enums.StatusEnums;
+import com.chobbi.server.shop.entity.ShopEntity;
+import com.chobbi.server.catalog.enums.StatusEnums;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +22,10 @@ public class ProductEntity extends BaseEntity {
     private String description;
     @NotBlank(message = "Sản phẩm phải có thumbnail")
     private String thumbnail;
+
+    @Column(nullable = false)
+    private Long weight = 0L;
+
     @ManyToOne
     @JoinColumn(name = "shop_id")
     private ShopEntity shopEntity;

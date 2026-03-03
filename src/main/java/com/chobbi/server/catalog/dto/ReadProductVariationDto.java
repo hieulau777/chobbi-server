@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReadProductVariationDto {
+    private Long id;
     private BigDecimal price;
     private Integer stock;
     private List<ReadProductVariationOptionDto> optionCombination;

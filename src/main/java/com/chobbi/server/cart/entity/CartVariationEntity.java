@@ -15,7 +15,8 @@ import java.math.BigDecimal;
 public class CartVariationEntity extends BaseEntity {
 
     private Integer quantity;
-    @Column(name = "price_at_time")
+
+    @Column(name = "price_at_time", nullable = false)
     private BigDecimal priceAtTime;
 
     @ManyToOne

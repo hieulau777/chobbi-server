@@ -13,6 +13,7 @@ public class ReadProductDto {
     private Long productId;
     private String productName;
     private String description;
+    private Long weight;
     private List<ReadProductImageDto> images;
     private List<ReadProductTierDto> tiers;
     private List<ReadProductOptionImagesDto> optionImages;

@@ -26,10 +26,40 @@ public class CategoryServicesImpl implements CategoryServices {
     }
 
     @Override
+    public List<CategoryDto> getLeafCategories() {
+        List<CategoryEntity> leaves = categoryRepo.findAllLeafCategories();
+        return leaves.stream()
+                .map(c -> new CategoryDto(c.getId(), c.getName()))
+                .toList();
+    }
+
+    @Override
     public List<CategoryDto> getTree(Long categoryId) {
         // Sử dụng Native Query đệ quy đã viết trong Repo
         List<CategoryEntity> descendants = categoryRepo.findAllDescendants(categoryId);
         return buildTree(descendants, categoryId);
+    }
+
+    @Override
+    public CategoryDto getBranchOfCategory(Long categoryId) {
+        // Lấy toàn bộ nhánh: tất cả cha, chính nó, và toàn bộ con cháu
+        List<CategoryEntity> branch = categoryRepo.findBranchWithAncestors(categoryId);
+        List<CategoryDto> tree = buildTree(branch, null);
+
+        if (tree.isEmpty()) {
+            throw new RuntimeException("Category not found with id: " + categoryId);
+        }
+
+        // Vì query đệ quy chỉ lấy chính nó + tất cả con cháu,
+        // node có id = categoryId sẽ luôn là root của nhánh.
+        return tree.get(0);
+    }
+
+    @Override
+    public CategoryDto getById(Long categoryId) {
+        CategoryEntity c = categoryRepo.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
+        return new CategoryDto(c.getId(), c.getName());
     }
 
     @Override

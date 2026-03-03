@@ -2,7 +2,7 @@ package com.chobbi.server.catalog.entity;
 
 import com.chobbi.server.cart.entity.CartVariationEntity;
 import com.chobbi.server.common.BaseEntity;
-import com.chobbi.server.enums.StatusEnums;
+import com.chobbi.server.catalog.enums.StatusEnums;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -26,7 +26,6 @@ public class VariationEntity extends BaseEntity {
     @Column(name = "price_discount")
     private BigDecimal priceDiscount;
     private Integer stock;
-    //private Long weight;
 
     @ManyToOne
     @JoinColumn(name = "product_id")

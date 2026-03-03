@@ -12,6 +12,9 @@ public interface CategoryRepo extends JpaRepository<CategoryEntity, Long> {
 
     boolean existsByParentId(Long id);
 
+    @Query("SELECT c FROM category c WHERE c.deletedAt IS NULL AND NOT EXISTS (SELECT ch FROM category ch WHERE ch.parent = c AND ch.deletedAt IS NULL)")
+    List<CategoryEntity> findAllLeafCategories();
+
     // Query đệ quy để lấy chính nó và tất cả các con cháu bên dưới
     @Query(value = "WITH RECURSIVE cat_tree AS (" +
             "SELECT * FROM category WHERE id = :id " +
@@ -19,4 +22,27 @@ public interface CategoryRepo extends JpaRepository<CategoryEntity, Long> {
             "SELECT c.* FROM category c INNER JOIN cat_tree ct ON c.parent_id = ct.id) " +
             "SELECT * FROM cat_tree", nativeQuery = true)
     List<CategoryEntity> findAllDescendants(@Param("id") Long id);
+
+    /**
+     * Lấy toàn bộ nhánh của một category, bao gồm:
+     * - Toàn bộ cha (ancestors) phía trên
+     * - Chính nó
+     * - Toàn bộ con cháu (descendants) phía dưới
+     */
+    @Query(value =
+            "WITH RECURSIVE cat_anc AS (" +
+            "   SELECT * FROM category WHERE id = :id " +
+            "   UNION ALL " +
+            "   SELECT c.* FROM category c INNER JOIN cat_anc ca ON c.id = ca.parent_id" +
+            "), " +
+            "cat_desc AS (" +
+            "   SELECT * FROM category WHERE id = :id " +
+            "   UNION ALL " +
+            "   SELECT c.* FROM category c INNER JOIN cat_desc cd ON c.parent_id = cd.id" +
+            ") " +
+            "SELECT * FROM cat_anc " +
+            "UNION " +
+            "SELECT * FROM cat_desc",
+            nativeQuery = true)
+    List<CategoryEntity> findBranchWithAncestors(@Param("id") Long id);
 }
