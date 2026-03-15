@@ -15,6 +15,8 @@ import java.util.List;
 public class ProductRequest {
     private Long shopId;
     private Long productId; // Bắt buộc để tìm sản phẩm [10, 11]
+    /** ACTIVE hoặc DRAFT. Khi tạo/update: front gửi lên để lưu trạng thái. */
+    private String status;
     @NotNull
     private Long categoryId; // Để check case đổi category [10, 12]
     @NotBlank

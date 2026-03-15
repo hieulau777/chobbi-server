@@ -33,8 +33,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -214,6 +216,14 @@ public class OrderServicesImpl implements OrderServices {
         return mapToShopOrderDtos(orders);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<MyOrderDto> getOrdersOfAccount(Long accountId, String status) {
+        List<OrderEntity> orders = orderRepo.findByAccountIdWithDetails(accountId);
+        String normalizedStatus = (status != null && !status.isBlank()) ? status.trim().toUpperCase() : null;
+        return mapToMyOrderDtos(orders, normalizedStatus);
+    }
+
     private List<ShopOrderDto> mapToShopOrderDtos(List<OrderEntity> orders) {
         return orders.stream()
                 .map(o -> {
@@ -273,6 +283,114 @@ public class OrderServicesImpl implements OrderServices {
                             .toList());
                     return dto;
                 })
+                .toList();
+    }
+
+    private List<MyOrderDto> mapToMyOrderDtos(List<OrderEntity> orders, String statusFilter) {
+        Map<Long, MyOrderDto> groupMap = new HashMap<>();
+
+        for (OrderEntity o : orders) {
+            if (o == null) {
+                continue;
+            }
+            if (statusFilter != null) {
+                String st = o.getStatus();
+                if (st == null || !statusFilter.equalsIgnoreCase(st)) {
+                    continue;
+                }
+            }
+
+            OrderGroupEntity og = o.getOrderGroupEntity();
+            if (og == null) {
+                continue;
+            }
+
+            Long groupId = og.getId();
+            if (groupId == null) {
+                continue;
+            }
+
+            MyOrderDto dto = groupMap.get(groupId);
+            if (dto == null) {
+                dto = new MyOrderDto();
+                dto.setOrderGroupId(groupId);
+                dto.setOrderGroupCode(og.getCode());
+                dto.setTotalAmount(og.getTotalAmount());
+                dto.setSubTotal(og.getSubTotal());
+                dto.setCreatedAt(og.getCreatedAt());
+                groupMap.put(groupId, dto);
+            }
+
+            MyOrderShopDto shopDto = new MyOrderShopDto();
+            shopDto.setOrderId(o.getId());
+            if (o.getShopEntity() != null) {
+                shopDto.setShopId(o.getShopEntity().getId());
+                shopDto.setShopName(o.getShopEntity().getName());
+            }
+            shopDto.setShippingName(o.getShippingEntity() != null ? o.getShippingEntity().getName() : null);
+            shopDto.setTotalPrice(o.getTotalPrice());
+            shopDto.setShippingCost(o.getShippingCost() != null ? o.getShippingCost() : BigDecimal.ZERO);
+            shopDto.setStatus(o.getStatus());
+
+            shopDto.setItems(o.getOrderVariations().stream()
+                    .map(ov -> {
+                        String name = null;
+                        String thumbnail = null;
+                        String variationName = null;
+                        Long productId = null;
+                        Long variationId = null;
+
+                        var variation = ov.getVariationEntity();
+                        if (variation != null) {
+                            variationId = variation.getId();
+                            Hibernate.initialize(variation.getVariationOptions());
+                            var opts = variation.getVariationOptions();
+                            if (opts != null && !opts.isEmpty()) {
+                                variationName = opts.stream()
+                                        .filter(vo -> vo.getDeletedAt() == null && vo.getOptionsEntity() != null)
+                                        .map(vo -> vo.getOptionsEntity().getName())
+                                        .collect(Collectors.joining(" / "));
+                                if (variationName != null && variationName.isEmpty()) {
+                                    variationName = null;
+                                }
+                            }
+                        }
+                        if (variation != null && variation.getProductEntity() != null) {
+                            var product = variation.getProductEntity();
+                            productId = product.getId();
+                            name = product.getName();
+                            thumbnail = product.getThumbnail();
+                            if (thumbnail == null || thumbnail.isBlank()) {
+                                Hibernate.initialize(product.getProductImages());
+                                var imgs = product.getProductImages();
+                                if (imgs != null && !imgs.isEmpty()) {
+                                    var first = imgs.stream()
+                                            .min(Comparator.comparing(ProductImagesEntity::getSortOrder, Comparator.nullsLast(Comparator.naturalOrder())))
+                                            .orElse(null);
+                                    if (first != null && first.getPath() != null) {
+                                        thumbnail = first.getPath();
+                                    }
+                                }
+                            }
+                        }
+
+                        MyOrderItemDto item = new MyOrderItemDto();
+                        item.setProductId(productId);
+                        item.setVariationId(variationId);
+                        item.setProductName(name);
+                        item.setProductThumbnail(thumbnail);
+                        item.setVariationName(variationName);
+                        item.setQuantity(ov.getQuantity());
+                        item.setPrice(ov.getPrice());
+                        return item;
+                    })
+                    .toList());
+
+            dto.getShops().add(shopDto);
+        }
+
+        return groupMap.values().stream()
+                .filter(g -> g.getShops() != null && !g.getShops().isEmpty())
                 .toList();
     }
 

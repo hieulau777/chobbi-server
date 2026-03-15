@@ -11,6 +11,7 @@ import lombok.Getter;
 public class ShopResponse {
     private Long id;
     private String name;
+    private String avatar;
     private StatusEnums status;
 }
 

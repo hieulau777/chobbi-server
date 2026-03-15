@@ -1,5 +1,6 @@
 package com.chobbi.server.config;
 
+import com.chobbi.server.auth.AdminPasswordFilter;
 import com.chobbi.server.auth.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,9 +19,11 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final AdminPasswordFilter adminPasswordFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, AdminPasswordFilter adminPasswordFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.adminPasswordFilter = adminPasswordFilter;
     }
 
     @Bean
@@ -33,13 +36,29 @@ public class SecurityConfig {
                     req.requestMatchers("/ws", "/ws/**").permitAll();
                     req.requestMatchers(HttpMethod.GET, "/address/provinces/**", "/address/districts/**").permitAll();
                     req.requestMatchers("/profile/info", "/profile/address/**").authenticated();
-                    req.requestMatchers("/shop/**").authenticated();
                     req.requestMatchers("/cart/**").authenticated();
                     req.requestMatchers("/notification/**").authenticated();
-                    // Tạm thời không yêu cầu auth cho API lấy danh sách đơn (seller)
-                    req.requestMatchers(HttpMethod.GET, "/order/shop/orders").permitAll();
-                    req.requestMatchers("/order/**").authenticated();
                     req.requestMatchers("/shipping/**").permitAll();
+
+                    // API public: trang chủ + category + product list + product detail client + product search (client không đăng nhập)
+                    req.requestMatchers(HttpMethod.GET, "/category/**").permitAll();
+                    req.requestMatchers(HttpMethod.GET, "/product/list").permitAll();
+                    req.requestMatchers(HttpMethod.GET, "/product/client").permitAll();
+                    req.requestMatchers(HttpMethod.GET, "/product/search").permitAll();
+                    // API public: danh sách thương hiệu cho nhánh category (dùng cho client)
+                    req.requestMatchers(HttpMethod.GET, "/product/brands").permitAll();
+                    // API public trang shop
+                    req.requestMatchers(HttpMethod.GET, "/shop/public/**").permitAll();
+                    // Chỉ SELLER: shop, promotion, product create/update/seller list, order shop/ship/cancel
+                    req.requestMatchers("/shop/**").hasRole("SELLER");
+                    req.requestMatchers("/promotion/**").hasRole("SELLER");
+                    req.requestMatchers(HttpMethod.POST, "/product/create", "/product/update").hasRole("SELLER");
+                    req.requestMatchers(HttpMethod.GET, "/product/seller/list").hasRole("SELLER");
+                    req.requestMatchers(HttpMethod.GET, "/product/{productId}").hasRole("SELLER");
+                    req.requestMatchers(HttpMethod.GET, "/order/shop/orders").hasRole("SELLER");
+                    req.requestMatchers(HttpMethod.POST, "/order/ship", "/order/cancel").hasRole("SELLER");
+
+                    req.requestMatchers("/order/**").authenticated();
                     req.anyRequest().permitAll();
                 })
                 .exceptionHandling(ex -> ex
@@ -54,6 +73,7 @@ public class SecurityConfig {
                             response.getWriter().write("{\"message\":\"Bạn không có quyền truy cập.\"}");
                         }))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(adminPasswordFilter, JwtAuthenticationFilter.class)
                 .build();
     }
 
@@ -62,6 +82,10 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.addAllowedOriginPattern("http://localhost:*");
+        // Production: client, seller, admin gọi API
+        config.addAllowedOriginPattern("https://chobbi.hieulau.net");
+        config.addAllowedOriginPattern("https://seller.chobbi.hieulau.net");
+        config.addAllowedOriginPattern("https://admin.chobbi.hieulau.net");
         config.addAllowedHeader(CorsConfiguration.ALL);
         config.addAllowedMethod(CorsConfiguration.ALL);
 

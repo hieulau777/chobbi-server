@@ -25,4 +25,6 @@ public class CartItemDto {
     private Long weight;
     /** Phân loại: ví dụ [ { "tierName": "Size", "optionName": "S" }, { "tierName": "Màu", "optionName": "Đỏ" } ] */
     private List<VariationOptionDisplayDto> variationOptions = new ArrayList<>();
+    /** Nếu true: sản phẩm/biến thể đã bị xóa hoặc ngừng bán, chỉ hiển thị nhưng không cho chọn/checkout. */
+    private boolean disabled;
 }

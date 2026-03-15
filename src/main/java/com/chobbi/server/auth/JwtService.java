@@ -1,7 +1,6 @@
 package com.chobbi.server.auth;
 
 import com.chobbi.server.account.entity.AccountEntity;
-import com.chobbi.server.account.enums.RoleEnums;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -27,6 +26,10 @@ public class JwtService {
         this.expirationMs = expirationMs;
     }
 
+    /**
+     * Payload JWT: subject (accountId), email, name, roles (BUYER/SELLER).
+     * Shop lấy theo account (1 user 1 shop) khi cần.
+     */
     public String generateToken(AccountEntity account) {
         List<String> roles = account.getAccountRoles().stream()
                 .map(ar -> ar.getRolesEntity().getRole().name())

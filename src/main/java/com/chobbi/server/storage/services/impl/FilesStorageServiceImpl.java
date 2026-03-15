@@ -96,6 +96,37 @@ public class FilesStorageServiceImpl implements FilesStorageService {
         }
     }
 
+    @Override
+    public String transferToFolder(MultipartFile file, String relativeFolderPath) {
+        try {
+            Path targetLocation = Paths.get(rootPath).resolve(relativeFolderPath);
+            Files.createDirectories(targetLocation);
+
+            String originalFilename = file.getOriginalFilename();
+            String extension = originalFilename != null && originalFilename.contains(".")
+                    ? originalFilename.substring(originalFilename.lastIndexOf(".")) : "";
+
+            String fileName = UUID.randomUUID() + extension;
+            Path targetPath = targetLocation.resolve(fileName);
+            file.transferTo(targetPath.toFile());
+
+            return relativeFolderPath + "/" + fileName;
+        } catch (IOException ex) {
+            throw new RuntimeException("Lỗi ghi file", ex);
+        }
+    }
+
+    @Override
+    public boolean deleteByRelativePath(String relativePath) {
+        if (relativePath == null || relativePath.isBlank()) return false;
+        try {
+            Path fullPath = Paths.get(rootPath).resolve(relativePath);
+            return Files.deleteIfExists(fullPath);
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     @Override public Resource load(String filename) { return null; }
     @Override public boolean delete(String filename) { return false; }
 }

@@ -1,0 +1,149 @@
+[
+  {
+    "categoryPath": {
+      "rootName": "Thời trang nam",
+      "leafName": "Áo thun"
+    },
+    "attributes": [
+      {
+        "name": "Thương hiệu",
+        "isRequired": true,
+        "isCustomAllow": false,
+        "isMultipleAllow": false,
+        "type": "TEXT",
+        "values": [
+          { "isCustom": false, "valueText": "Nike" },
+          { "isCustom": false, "valueText": "Adidas" },
+          { "isCustom": false, "valueText": "Puma" },
+          { "isCustom": false, "valueText": "Uniqlo" },
+          { "isCustom": false, "valueText": "H&M" },
+          { "isCustom": false, "valueText": "Zara" },
+          { "isCustom": false, "valueText": "Levi's" },
+          { "isCustom": false, "valueText": "Calvin Klein" },
+          { "isCustom": false, "valueText": "Lacoste" },
+          { "isCustom": false, "valueText": "New Balance" },
+          { "isCustom": false, "valueText": "Under Armour" },
+          { "isCustom": false, "valueText": "Fila" },
+          { "isCustom": false, "valueText": "GAP" },
+          { "isCustom": false, "valueText": "Hollister" },
+          { "isCustom": false, "valueText": "Champion" },
+          { "isCustom": false, "valueText": "Converse" },
+          { "isCustom": false, "valueText": "Vans" },
+          { "isCustom": false, "valueText": "MLB" },
+          { "isCustom": false, "valueText": "Routine" },
+          { "isCustom": false, "valueText": "Coolmate" }
+        ]
+      }
+    ]
+  },
+  {
+    "categoryPath": {
+      "rootName": "Thời trang nam",
+      "leafName": "Áo sơ mi"
+    },
+    "attributes": [
+      {
+        "name": "Thương hiệu",
+        "isRequired": true,
+        "isCustomAllow": false,
+        "isMultipleAllow": false,
+        "type": "TEXT",
+        "values": [
+          { "isCustom": false, "valueText": "An Phước" },
+          { "isCustom": false, "valueText": "Việt Tiến" },
+          { "isCustom": false, "valueText": "Owen" },
+          { "isCustom": false, "valueText": "May 10" },
+          { "isCustom": false, "valueText": "Ninomaxx" },
+          { "isCustom": false, "valueText": "Novelty" },
+          { "isCustom": false, "valueText": "Aristino" },
+          { "isCustom": false, "valueText": "Pierre Cardin" },
+          { "isCustom": false, "valueText": "Giovanni" },
+          { "isCustom": false, "valueText": "Mango" },
+          { "isCustom": false, "valueText": "H&M" },
+          { "isCustom": false, "valueText": "Zara" },
+          { "isCustom": false, "valueText": "Uniqlo" },
+          { "isCustom": false, "valueText": "Calvin Klein" },
+          { "isCustom": false, "valueText": "Tommy Hilfiger" },
+          { "isCustom": false, "valueText": "G2000" },
+          { "isCustom": false, "valueText": "Blue Exchange" },
+          { "isCustom": false, "valueText": "Biluxury" },
+          { "isCustom": false, "valueText": "Routine" },
+          { "isCustom": false, "valueText": "Ivy Moda" }
+        ]
+      }
+    ]
+  },
+  {
+    "categoryPath": {
+      "rootName": "Sức khỏe",
+      "leafName": "Hỗ trợ tăng cơ"
+    },
+    "attributes": [
+      {
+        "name": "Thương hiệu",
+        "isRequired": true,
+        "isCustomAllow": false,
+        "isMultipleAllow": false,
+        "type": "TEXT",
+        "values": [
+          { "isCustom": false, "valueText": "Optimum Nutrition" },
+          { "isCustom": false, "valueText": "Myprotein" },
+          { "isCustom": false, "valueText": "MuscleTech" },
+          { "isCustom": false, "valueText": "Dymatize" },
+          { "isCustom": false, "valueText": "BSN" },
+          { "isCustom": false, "valueText": "Rule 1" },
+          { "isCustom": false, "valueText": "Applied Nutrition" },
+          { "isCustom": false, "valueText": "Labrada" },
+          { "isCustom": false, "valueText": "Ultimate Nutrition" },
+          { "isCustom": false, "valueText": "Mutant" },
+          { "isCustom": false, "valueText": "Ronnie Coleman" },
+          { "isCustom": false, "valueText": "Elite Labs" },
+          { "isCustom": false, "valueText": "Allmax (Isoflex)" },
+          { "isCustom": false, "valueText": "Kevin Levrone" },
+          { "isCustom": false, "valueText": "Nutrex" },
+          { "isCustom": false, "valueText": "Scitec Nutrition" },
+          { "isCustom": false, "valueText": "BPI Sports" },
+          { "isCustom": false, "valueText": "Universal Nutrition" },
+          { "isCustom": false, "valueText": "EVL Nutrition" }
+        ]
+      }
+    ]
+  },
+  {
+    "categoryPath": {
+      "rootName": "Sức khỏe",
+      "leafName": "Hỗ trợ sức khỏe"
+    },
+    "attributes": [
+      {
+        "name": "Thương hiệu",
+        "isRequired": true,
+        "isCustomAllow": false,
+        "isMultipleAllow": false,
+        "type": "TEXT",
+        "values": [
+          { "isCustom": false, "valueText": "Blackmores" },
+          { "isCustom": false, "valueText": "Centrum" },
+          { "isCustom": false, "valueText": "Nature Made" },
+          { "isCustom": false, "valueText": "Kirkland Signature" },
+          { "isCustom": false, "valueText": "Puritan's Pride" },
+          { "isCustom": false, "valueText": "Swisse" },
+          { "isCustom": false, "valueText": "Vitafusion" },
+          { "isCustom": false, "valueText": "Doppelherz" },
+          { "isCustom": false, "valueText": "Pharmaton" },
+          { "isCustom": false, "valueText": "Elevit" },
+          { "isCustom": false, "valueText": "Ostelin" },
+          { "isCustom": false, "valueText": "Solgar" },
+          { "isCustom": false, "valueText": "Now Foods" },
+          { "isCustom": false, "valueText": "Doctor's Best" },
+          { "isCustom": false, "valueText": "Mega We Care" },
+          { "isCustom": false, "valueText": "Traphaco" },
+          { "isCustom": false, "valueText": "DHG Pharma" },
+          { "isCustom": false, "valueText": "OPC" },
+          { "isCustom": false, "valueText": "Rohto" },
+          { "isCustom": false, "valueText": "Sanofi" }
+        ]
+      }
+    ]
+  }
+]

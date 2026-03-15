@@ -2,6 +2,7 @@ package com.chobbi.server.auth;
 
 import com.chobbi.server.account.entity.AccountEntity;
 import com.chobbi.server.account.repo.AccountRepo;
+import com.chobbi.server.auth.services.EmailBlacklistService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,6 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final AccountRepo accountRepo;
+    private final EmailBlacklistService emailBlacklistService;
 
     @Override
     protected void doFilterInternal(
@@ -40,6 +42,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 String email = jwtService.getEmailFromToken(token);
+                if (emailBlacklistService.isBlacklisted(email)) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"message\":\"Tài khoản của bạn đã bị khóa.\"}");
+                    return;
+                }
                 Optional<AccountEntity> accountOpt = accountRepo.findByEmailWithRoles(email);
                 if (accountOpt.isPresent()) {
                     AccountPrincipal principal = new AccountPrincipal(accountOpt.get());

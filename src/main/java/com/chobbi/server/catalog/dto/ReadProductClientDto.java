@@ -14,6 +14,9 @@ public class ReadProductClientDto {
     private String productName;
     private String description;
     private Long weight;
+    private Long shopId;
+    private String shopName;
+    private String shopAvatar;
     private List<ReadProductImageDto> images;
     private List<ReadProductTierDto> tiers;
     private List<ReadProductOptionImagesDto> optionImages;

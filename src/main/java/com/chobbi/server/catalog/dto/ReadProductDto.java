@@ -12,6 +12,8 @@ import java.util.List;
 public class ReadProductDto {
     private Long productId;
     private String productName;
+    /** ACTIVE hoặc DRAFT (cho seller form) */
+    private String status;
     private String description;
     private Long weight;
     private List<ReadProductImageDto> images;

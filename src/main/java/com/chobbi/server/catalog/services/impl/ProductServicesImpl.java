@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,6 +52,7 @@ public class ProductServicesImpl implements ProductServices {
 
         CategoryEntity categoryEntity = categoryServices.getLeafCategoryOrThrow(req.getCategoryId());
         ProductEntity product = createBaseProduct(req, shopEntity, categoryEntity);
+        product.setStatus(parseProductStatus(req.getStatus()));
         processAttributes(product, req.getAttributes(), categoryEntity);
         Map<String, MultipartFile> mapImages = validateImages(req, media);
         processProductImages(req, media, mapImages, product);
@@ -77,10 +79,179 @@ public class ProductServicesImpl implements ProductServices {
     @Override
     @Transactional(readOnly = true)
     public List<ReadProductSellerDto> listProductsByShopId(Long shopId) {
+        return listProductsByShopId(shopId, null, null, null, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReadProductSellerDto> listProductsByShopId(Long shopId,
+                                                           String nameKeyword,
+                                                           BigDecimal minPrice,
+                                                           BigDecimal maxPrice,
+                                                           Long categoryId) {
+        return listProductsByShopId(shopId, nameKeyword, minPrice, maxPrice, categoryId, null);
+    }
+
+    private List<ReadProductSellerDto> listProductsByShopId(Long shopId,
+                                                            String nameKeyword,
+                                                            BigDecimal minPrice,
+                                                            BigDecimal maxPrice,
+                                                            Long categoryId,
+                                                            String statusFilter) {
         List<ProductEntity> products = productRepo.findAllByShopEntity_IdAndDeletedAtIsNull(shopId);
+
+        if (statusFilter != null && !statusFilter.isBlank()) {
+            StatusEnums statusEnum = parseProductStatus(statusFilter);
+            products = products.stream()
+                    .filter(p -> statusEnum.equals(p.getStatus()))
+                    .toList();
+        }
+
+        if (nameKeyword != null && !nameKeyword.isBlank()) {
+            String kw = nameKeyword.trim().toLowerCase();
+            products = products.stream()
+                    .filter(p -> p.getName() != null && p.getName().toLowerCase().contains(kw))
+                    .toList();
+        }
+
+        // Filter theo category bất kỳ cấp nào (nếu truyền vào): lấy chính nó + toàn bộ con cháu
+        if (categoryId != null) {
+            CategoryEntity rootCategory = categoryRepo.findById(categoryId)
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
+
+            List<CategoryEntity> descendants = categoryRepo.findAllDescendants(categoryId);
+
+            List<Long> categoryIds = new ArrayList<>();
+            if (rootCategory.getDeletedAt() == null) {
+                categoryIds.add(rootCategory.getId());
+            }
+            if (descendants != null) {
+                descendants.stream()
+                        .filter(c -> c.getDeletedAt() == null)
+                        .map(CategoryEntity::getId)
+                        .forEach(categoryIds::add);
+            }
+
+            if (!categoryIds.isEmpty()) {
+                products = products.stream()
+                        .filter(p -> p.getCategoryEntity() != null
+                                && categoryIds.contains(p.getCategoryEntity().getId()))
+                        .toList();
+            } else {
+                products = List.of();
+            }
+        }
+
+        // Filter theo khoảng giá (dựa trên min price của variations còn sống)
         return products.stream()
+                .filter(p -> {
+                    BigDecimal price = p.getVariations().stream()
+                            .filter(v -> v.getDeletedAt() == null && v.getPrice() != null)
+                            .map(VariationEntity::getPrice)
+                            .min(BigDecimal::compareTo)
+                            .orElse(null);
+
+                    if (price == null) {
+                        return false;
+                    }
+
+                    boolean okMin = (minPrice == null) || price.compareTo(minPrice) >= 0;
+                    boolean okMax = (maxPrice == null) || price.compareTo(maxPrice) <= 0;
+                    return okMin && okMax;
+                })
                 .map(this::toReadProductSellerDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductListPageDto listProductsByShopId(Long shopId,
+                                                   String nameKeyword,
+                                                   BigDecimal minPrice,
+                                                   BigDecimal maxPrice,
+                                                   Long categoryId,
+                                                   String status,
+                                                   Integer page,
+                                                   Integer size,
+                                                   String sortField,
+                                                   String sortDir) {
+        List<ReadProductSellerDto> full = listProductsByShopId(shopId, nameKeyword, minPrice, maxPrice, categoryId, status);
+
+        // Sort theo yêu cầu: price = max price của các biến thể; stock = tổng stock của tất cả biến thể.
+        if (sortField != null && !sortField.isBlank() && sortDir != null && !sortDir.isBlank()) {
+            String field = sortField.trim().toLowerCase(Locale.ROOT);
+            String dir = sortDir.trim().toLowerCase(Locale.ROOT);
+
+            Comparator<ReadProductSellerDto> comparator = null;
+
+            if ("name".equals(field)) {
+                comparator = Comparator.comparing(
+                        dto -> Optional.ofNullable(dto.getName()).orElse(""),
+                        String.CASE_INSENSITIVE_ORDER
+                );
+            } else if ("price".equals(field)) {
+                comparator = Comparator.comparing(
+                        this::getMaxVariationPriceForSort,
+                        Comparator.nullsFirst(BigDecimal::compareTo)
+                );
+            } else if ("stock".equals(field)) {
+                comparator = Comparator.comparingLong(this::getTotalStockForSort);
+            }
+
+            if (comparator != null) {
+                if ("desc".equals(dir)) {
+                    comparator = comparator.reversed();
+                }
+                full = full.stream().sorted(comparator).toList();
+            }
+        }
+        int totalElements = full.size();
+        int pageSize = (size != null && size > 0) ? size : 3;
+        int totalPages = totalElements == 0 ? 1 : (totalElements + pageSize - 1) / pageSize;
+        int pageIndex = (page != null && page >= 0) ? Math.min(page, totalPages - 1) : 0;
+        int from = pageIndex * pageSize;
+        int to = Math.min(from + pageSize, totalElements);
+        List<ReadProductSellerDto> content = from < totalElements ? full.subList(from, to) : List.of();
+        return new ProductListPageDto(content, totalPages, totalElements, pageIndex, pageSize);
+    }
+
+    private BigDecimal getMaxVariationPriceForSort(ReadProductSellerDto dto) {
+        if (dto.getVariations() == null || dto.getVariations().isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        return dto.getVariations().stream()
+                .map(ReadProductVariationSellerDto::getPrice)
+                .filter(Objects::nonNull)
+                .max(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
+    }
+
+    private long getTotalStockForSort(ReadProductSellerDto dto) {
+        if (dto.getVariations() == null || dto.getVariations().isEmpty()) {
+            return 0L;
+        }
+        return dto.getVariations().stream()
+                .map(ReadProductVariationSellerDto::getQuantity)
+                .filter(Objects::nonNull)
+                .mapToLong(Integer::longValue)
+                .sum();
+    }
+
+    private BigDecimal getMaxVariationPriceForSortCategory(ProductEntity p) {
+        return p.getVariations().stream()
+                .filter(v -> v.getDeletedAt() == null && v.getPrice() != null)
+                .map(VariationEntity::getPrice)
+                .max(BigDecimal::compareTo)
+                .orElse(null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductSellerCountsDto getProductCountsByShop(Long shopId) {
+        long all = productRepo.countByShopEntity_IdAndDeletedAtIsNull(shopId);
+        long active = productRepo.countByShopEntity_IdAndDeletedAtIsNullAndStatus(shopId, StatusEnums.ACTIVE);
+        long draft = productRepo.countByShopEntity_IdAndDeletedAtIsNullAndStatus(shopId, StatusEnums.DRAFT);
+        return new ProductSellerCountsDto(all, active, draft);
     }
 
     private ReadProductSellerDto toReadProductSellerDto(ProductEntity p) {
@@ -88,6 +259,7 @@ public class ProductServicesImpl implements ProductServices {
         dto.setId(p.getId());
         dto.setImg(p.getThumbnail());
         dto.setName(p.getName());
+        dto.setStatus(p.getStatus() != null ? p.getStatus().name() : null);
         dto.setVariations(
                 p.getVariations().stream()
                         .filter(v -> v.getDeletedAt() == null)
@@ -116,6 +288,7 @@ public class ProductServicesImpl implements ProductServices {
         ReadProductDto dto = new ReadProductDto();
         dto.setProductId(product.getId());
         dto.setProductName(product.getName());
+        dto.setStatus(product.getStatus() != null ? product.getStatus().name() : null);
         dto.setDescription(product.getDescription());
         dto.setWeight(product.getWeight());
 
@@ -222,6 +395,11 @@ public class ProductServicesImpl implements ProductServices {
 
     @Override
     public ReadProductClientDto getProductDetailClient(Long productId) {
+        ProductEntity product = productRepo.findByIdAndDeletedAtIsNull(productId)
+                .orElseThrow(() -> new BusinessException("Product not found", HttpStatus.NOT_FOUND));
+        if (product.getStatus() != StatusEnums.ACTIVE) {
+            throw new BusinessException("Product not found", HttpStatus.NOT_FOUND);
+        }
         // Tái sử dụng DTO readProduct, sau đó rút gọn attributes cho client:
         // chỉ giữ những attribute đã được set, với name + value hiển thị.
         ReadProductDto base = readProduct(productId);
@@ -262,6 +440,11 @@ public class ProductServicesImpl implements ProductServices {
         dto.setProductName(base.getProductName());
         dto.setDescription(base.getDescription());
         dto.setWeight(base.getWeight());
+        if (product.getShopEntity() != null) {
+            dto.setShopId(product.getShopEntity().getId());
+            dto.setShopName(product.getShopEntity().getName());
+            dto.setShopAvatar(product.getShopEntity().getAvatar());
+        }
         dto.setImages(base.getImages());
         dto.setTiers(base.getTiers());
         dto.setOptionImages(base.getOptionImages());
@@ -275,18 +458,18 @@ public class ProductServicesImpl implements ProductServices {
     @Override
     @Transactional(readOnly = true)
     public List<ProductCardDto> listProductsByCategoryId(Long categoryId) {
-        return listProductsByCategoryId(categoryId, null, null, null);
+        return listProductsByCategoryId(categoryId, null, null, null, null, null);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ProductCardDto> listProductsByCategoryId(Long categoryId, BigDecimal minPrice, BigDecimal maxPrice) {
-        return listProductsByCategoryId(categoryId, minPrice, maxPrice, null);
+        return listProductsByCategoryId(categoryId, minPrice, maxPrice, null, null, null);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductCardDto> listProductsByCategoryId(Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, List<Long> brandValueIds) {
+    public List<ProductCardDto> listProductsByCategoryId(Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, List<Long> brandValueIds, String sortField, String sortDir) {
         // Cho phép category bất kỳ (cha hoặc lá):
         // - Lấy chính category đó và toàn bộ con cháu bên dưới
         // - Lấy tất cả sản phẩm thuộc các category này
@@ -318,7 +501,7 @@ public class ProductServicesImpl implements ProductServices {
                 ? null
                 : new HashSet<>(brandValueIds);
 
-        return products.stream()
+        var stream = products.stream()
                 .filter(p -> {
                     BigDecimal price = p.getVariations().stream()
                             .filter(v -> v.getDeletedAt() == null && v.getPrice() != null)
@@ -347,9 +530,107 @@ public class ProductServicesImpl implements ProductServices {
                                             && pa.getAttributesEntity().getName().equalsIgnoreCase("Thương hiệu")
                                             && brandIdSet.contains(pa.getAttributeValuesEntity().getId())
                             );
-                })
+                });
+
+        List<ProductEntity> filtered = stream.toList();
+
+        if (sortField != null && sortDir != null && !sortField.isBlank() && !sortDir.isBlank()) {
+            String field = sortField.trim().toLowerCase(Locale.ROOT);
+            String dir = sortDir.trim().toLowerCase(Locale.ROOT);
+
+            Comparator<ProductEntity> comparator = null;
+            if ("price".equals(field)) {
+                comparator = Comparator.comparing(
+                        this::getMaxVariationPriceForSortCategory,
+                        Comparator.nullsFirst(BigDecimal::compareTo)
+                );
+            } else if ("time".equals(field)) {
+                comparator = Comparator.comparing(
+                        ProductEntity::getUpdatedAt,
+                        Comparator.nullsFirst(LocalDateTime::compareTo)
+                );
+            }
+            if (comparator != null) {
+                if ("desc".equals(dir)) {
+                    comparator = comparator.reversed();
+                }
+                filtered = filtered.stream().sorted(comparator).toList();
+            }
+        }
+
+        return filtered.stream()
                 .map(this::toProductCardDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductCardDto> searchProductsByName(String keyword, BigDecimal minPrice, BigDecimal maxPrice, String sortField, String sortDir) {
+        String trimmed = keyword == null ? "" : keyword.trim();
+        if (trimmed.isEmpty()) {
+            return List.of();
+        }
+        List<ProductEntity> products = productRepo
+                .findByNameContainingIgnoreCaseAndDeletedAtIsNullAndStatus(trimmed, StatusEnums.ACTIVE);
+
+        var stream = products.stream()
+                .filter(p -> {
+                    BigDecimal price = p.getVariations().stream()
+                            .filter(v -> v.getDeletedAt() == null && v.getPrice() != null)
+                            .map(VariationEntity::getPrice)
+                            .min(BigDecimal::compareTo)
+                            .orElse(null);
+                    if (price == null) {
+                        return false;
+                    }
+                    boolean okMin = (minPrice == null) || price.compareTo(minPrice) >= 0;
+                    boolean okMax = (maxPrice == null) || price.compareTo(maxPrice) <= 0;
+                    return okMin && okMax;
+                });
+
+        List<ProductEntity> filtered = stream.toList();
+
+        if (sortField != null && sortDir != null && !sortField.isBlank() && !sortDir.isBlank()) {
+            String field = sortField.trim().toLowerCase(Locale.ROOT);
+            String dir = sortDir.trim().toLowerCase(Locale.ROOT);
+
+            Comparator<ProductEntity> comparator = null;
+            if ("price".equals(field)) {
+                comparator = Comparator.comparing(
+                        this::getMaxVariationPriceForSortCategory,
+                        Comparator.nullsFirst(BigDecimal::compareTo)
+                );
+            } else if ("time".equals(field)) {
+                comparator = Comparator.comparing(
+                        ProductEntity::getUpdatedAt,
+                        Comparator.nullsFirst(LocalDateTime::compareTo)
+                );
+            }
+            if (comparator != null) {
+                if ("desc".equals(dir)) {
+                    comparator = comparator.reversed();
+                }
+                filtered = filtered.stream().sorted(comparator).toList();
+            }
+        }
+
+        return filtered.stream()
+                .map(this::toProductCardDto)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductCardListPageDto listProductsByCategoryIdPaged(Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, List<Long> brandValueIds, String sortField, String sortDir, int page, int size) {
+        List<ProductCardDto> full = listProductsByCategoryId(categoryId, minPrice, maxPrice, brandValueIds, sortField, sortDir);
+        long totalElements = full.size();
+        int safeSize = size <= 0 ? 12 : size;
+        int totalPages = totalElements == 0 ? 0 : (int) Math.ceil((double) totalElements / safeSize);
+        int safePage = Math.max(0, Math.min(page, totalPages == 0 ? 0 : totalPages - 1));
+        int from = safePage * safeSize;
+        int to = (int) Math.min(from + safeSize, totalElements);
+        List<ProductCardDto> content = from < totalElements ? full.subList(from, to) : List.of();
+        return new ProductCardListPageDto(content, totalPages, totalElements, safePage, safeSize);
     }
 
     @Override
@@ -422,46 +703,67 @@ public class ProductServicesImpl implements ProductServices {
         ProductEntity product = productRepo.findByIdAndDeletedAtIsNull(req.getProductId())
                 .orElseThrow(() -> new BusinessException("Product not found", HttpStatus.NOT_FOUND));
 
-        product.setName(req.getName());
-        product.setDescription(req.getDescription());
-        product.setWeight(req.getWeight() != null ? req.getWeight() : 0L);
+        boolean isActiveProduct = product.getStatus() == StatusEnums.ACTIVE;
 
-        product.getProductAttributes().clear();
-        CategoryEntity category = categoryRepo.findById(req.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-        product.setCategoryEntity(category);
-        processAttributes(product, req.getAttributes(), category);
+        if (isActiveProduct) {
+            // Sản phẩm đã publish: cập nhật mô tả, thuộc tính, hình ảnh, và giá/tồn kho biến thể
+            product.setDescription(req.getDescription());
+            product.getProductAttributes().clear();
+            CategoryEntity category = product.getCategoryEntity() != null
+                    ? product.getCategoryEntity()
+                    : categoryRepo.findById(req.getCategoryId()).orElseThrow(() -> new RuntimeException("Category not found"));
+            processAttributes(product, req.getAttributes(), category);
 
-        Map<String, MultipartFile> mapImages = validateImages(req, media);
-        processProductImages(req, media, mapImages, product);
+            Map<String, MultipartFile> mapImages = validateImages(req, media);
+            processProductImages(req, media, mapImages, product);
 
-        boolean reqHasTiers = req.getTiers() != null && !req.getTiers().isEmpty();
-
-        if (!reqHasTiers) {
-            product.getTiers().stream()
-                    .filter(t -> t.getDeletedAt() == null)
-                    .forEach(t -> {
-                        t.softDelete();
-                        t.getOptions().forEach(BaseEntity::softDelete);
-                    });
-
-            processSingleVariation(req, product);
+            if (req.getVariations() != null && !req.getVariations().isEmpty()) {
+                updateVariationPriceStockOnly(product, req.getVariations());
+            }
         } else {
-            TierValidationResult tierValidationResult = validateTiers(req, idLookupTierOptionFromDb(product.getId()));
-            Map<String, ProcessedTier> normalizeTierOptionMap = tierValidationResult.getNormalizedTierOptions();
+            // DRAFT: cập nhật đầy đủ và cho phép đổi status (DRAFT/ACTIVE)
+            product.setName(req.getName());
+            product.setDescription(req.getDescription());
+            product.setWeight(req.getWeight() != null ? req.getWeight() : 0L);
+            product.setStatus(parseProductStatus(req.getStatus()));
 
-            validateVariations(
-                    req,
-                    normalizeTierOptionMap,
-                    idLookupTierOptionFromDb(product.getId()),
-                    tierValidationResult.getCountCartesian()
-            );
+            product.getProductAttributes().clear();
+            CategoryEntity category = categoryRepo.findById(req.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
+            product.setCategoryEntity(category);
+            processAttributes(product, req.getAttributes(), category);
 
-            Map<String, OptionsEntity> mapOptionsEntities = processTierOptions(product, normalizeTierOptionMap);
+            Map<String, MultipartFile> mapImages = validateImages(req, media);
+            processProductImages(req, media, mapImages, product);
 
-            processOptionImages(req, mapOptionsEntities, mapImages);
+            boolean reqHasTiers = req.getTiers() != null && !req.getTiers().isEmpty();
 
-            processVariations(req, product, mapOptionsEntities);
+            if (!reqHasTiers) {
+                product.getTiers().stream()
+                        .filter(t -> t.getDeletedAt() == null)
+                        .forEach(t -> {
+                            t.softDelete();
+                            t.getOptions().forEach(BaseEntity::softDelete);
+                        });
+
+                processSingleVariation(req, product);
+            } else {
+                TierValidationResult tierValidationResult = validateTiers(req, idLookupTierOptionFromDb(product.getId()));
+                Map<String, ProcessedTier> normalizeTierOptionMap = tierValidationResult.getNormalizedTierOptions();
+
+                validateVariations(
+                        req,
+                        normalizeTierOptionMap,
+                        idLookupTierOptionFromDb(product.getId()),
+                        tierValidationResult.getCountCartesian()
+                );
+
+                Map<String, OptionsEntity> mapOptionsEntities = processTierOptions(product, normalizeTierOptionMap);
+
+                processOptionImages(req, mapOptionsEntities, mapImages);
+
+                processVariations(req, product, mapOptionsEntities);
+            }
         }
 
         productRepo.save(product);
@@ -475,6 +777,35 @@ public class ProductServicesImpl implements ProductServices {
         product.setDescription(req.getDescription());
         product.setWeight(req.getWeight() != null ? req.getWeight() : 0L);
         return product;
+    }
+
+    private static StatusEnums parseProductStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return StatusEnums.DRAFT;
+        }
+        return switch (status.trim().toUpperCase()) {
+            case "ACTIVE" -> StatusEnums.ACTIVE;
+            case "DRAFT" -> StatusEnums.DRAFT;
+            default -> StatusEnums.DRAFT;
+        };
+    }
+
+    /** Chỉ cập nhật giá và tồn kho của các biến thể đã tồn tại (dùng khi sản phẩm ACTIVE). */
+    private void updateVariationPriceStockOnly(ProductEntity product, List<ProductVariationDto> reqVariations) {
+        Map<Long, VariationEntity> existingMap = product.getVariations().stream()
+                .filter(v -> v.getDeletedAt() == null)
+                .collect(Collectors.toMap(VariationEntity::getId, v -> v));
+        for (ProductVariationDto dto : reqVariations) {
+            if (dto.getId() == null) continue;
+            VariationEntity variation = existingMap.get(dto.getId());
+            if (variation == null) continue;
+            if (dto.getPrice() != null) {
+                variation.setPrice(dto.getPrice());
+            }
+            if (dto.getStock() != null) {
+                variation.setStock(dto.getStock());
+            }
+        }
     }
 
     private void processAttributes(
@@ -722,11 +1053,16 @@ public class ProductServicesImpl implements ProductServices {
 
         Set<String> imgOptionNames = new HashSet<>();
         for (ProductOptionImageDto item : reqOptionImages) {
-            if (!reqImageNames.add(item.getImageName())) {
-                throw new RuntimeException("Duplicate image name: " + item.getImageName());
+            String imageName = item.getImageName();
+            if (imageName != null && !imageName.isBlank()) {
+                if (!reqImageNames.add(imageName)) {
+                    throw new RuntimeException("Duplicate image name: " + imageName);
+                }
             }
-            if (!imgOptionNames.add(item.getOptionName().toLowerCase(Locale.ROOT))) {
-                throw new RuntimeException("Duplicate option name: " + item.getOptionName());
+            if (item.getOptionName() != null) {
+                if (!imgOptionNames.add(item.getOptionName().toLowerCase(Locale.ROOT))) {
+                    throw new RuntimeException("Duplicate option name: " + item.getOptionName());
+                }
             }
         }
         Set<String> optionNames = new HashSet<>();
@@ -739,8 +1075,8 @@ public class ProductServicesImpl implements ProductServices {
                 }
             }
         }
-        if (!imgOptionNames.isEmpty() && !imgOptionNames.containsAll(optionNames)) {
-            throw new RuntimeException("Option images option name do not belong to has images tier option names:");
+        if (!imgOptionNames.isEmpty() && !optionNames.containsAll(imgOptionNames)) {
+            throw new RuntimeException("Option images option name do not belong to has-images tier option names");
         }
 
         Map<String, MultipartFile> mapImages = new HashMap<>();
@@ -759,72 +1095,120 @@ public class ProductServicesImpl implements ProductServices {
     }
 
     private Map<String, OptionsEntity> processTierOptions(ProductEntity product, Map<String, ProcessedTier> normalizeTierOptionMap) {
-        Map<Long, TierEntity> existingTierMap = product.getTiers().stream()
+        // Map tier hiện có theo id và theo tên (lowercase) để có thể reuse bằng name khi client không gửi id
+        List<TierEntity> existingTiers = product.getTiers().stream()
                 .filter(t -> t.getDeletedAt() == null)
+                .toList();
+
+        Map<Long, TierEntity> existingTierById = existingTiers.stream()
+                .filter(t -> t.getId() != null)
                 .collect(Collectors.toMap(TierEntity::getId, t -> t));
 
-        Set<Long> reqTierIds = normalizeTierOptionMap.values().stream()
-                .map(ProcessedTier::getId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        Map<String, TierEntity> existingTierByName = existingTiers.stream()
+                .filter(t -> t.getName() != null)
+                .collect(Collectors.toMap(
+                        t -> t.getName().trim().toLowerCase(),
+                        t -> t,
+                        (a, b) -> a
+                ));
 
-        for (TierEntity tier : product.getTiers()) {
-            if (tier.getDeletedAt() == null && (tier.getId() == null || !reqTierIds.contains(tier.getId()))) {
-                tier.softDelete();
-                tier.getOptions().forEach(BaseEntity::softDelete);
-            }
-        }
-
+        Set<Long> usedTierIds = new HashSet<>();
         Map<String, OptionsEntity> mapOptionsEntities = new HashMap<>();
 
         for (ProcessedTier processedTier : normalizeTierOptionMap.values()) {
-            TierEntity tierEntity;
+            String tierName = processedTier.getName();
+            String normTierName = tierName != null ? tierName.trim().toLowerCase() : "";
 
-            if (processedTier.getId() != null && existingTierMap.containsKey(processedTier.getId())) {
-                tierEntity = existingTierMap.get(processedTier.getId());
-            } else {
+            TierEntity tierEntity = null;
+
+            if (processedTier.getId() != null && existingTierById.containsKey(processedTier.getId())) {
+                tierEntity = existingTierById.get(processedTier.getId());
+            } else if (!normTierName.isEmpty() && existingTierByName.containsKey(normTierName)) {
+                tierEntity = existingTierByName.get(normTierName);
+            }
+
+            if (tierEntity == null) {
                 tierEntity = new TierEntity();
                 tierEntity.setProductEntity(product);
                 product.getTiers().add(tierEntity);
             }
 
-            tierEntity.setName(processedTier.getName());
+            tierEntity.setName(tierName);
             tierEntity.setHasImages(processedTier.isHasImages());
+
+            if (tierEntity.getId() != null) {
+                usedTierIds.add(tierEntity.getId());
+            }
 
             processOptions(tierEntity, processedTier, mapOptionsEntities);
         }
+
+        // Soft delete các tier không còn trong payload (theo id)
+        for (TierEntity tier : existingTiers) {
+            if (tier.getId() != null && !usedTierIds.contains(tier.getId())) {
+                tier.softDelete();
+                tier.getOptions().forEach(BaseEntity::softDelete);
+            }
+        }
+
         return mapOptionsEntities;
     }
 
     private void processOptions(TierEntity tierEntity, ProcessedTier processedTier, Map<String, OptionsEntity> mapOptionsEntities) {
-        Map<Long, OptionsEntity> existingOptMap = tierEntity.getOptions().stream()
+        List<OptionsEntity> existingOptions = tierEntity.getOptions().stream()
                 .filter(o -> o.getDeletedAt() == null)
+                .toList();
+
+        Map<Long, OptionsEntity> existingOptById = existingOptions.stream()
+                .filter(o -> o.getId() != null)
                 .collect(Collectors.toMap(OptionsEntity::getId, o -> o));
 
-        Set<Long> reqOptIds = processedTier.getOptionsMap().values().stream()
-                .map(ProcessedOption::getId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        Map<String, OptionsEntity> existingOptByName = existingOptions.stream()
+                .filter(o -> o.getName() != null)
+                .collect(Collectors.toMap(
+                        o -> o.getName().trim().toLowerCase(),
+                        o -> o,
+                        (a, b) -> a
+                ));
 
-        tierEntity.getOptions().stream()
-                .filter(o -> o.getDeletedAt() == null && !reqOptIds.contains(o.getId()))
-                .forEach(BaseEntity::softDelete);
+        Set<Long> usedOptIds = new HashSet<>();
 
         for (ProcessedOption processedOpt : processedTier.getOptionsMap().values()) {
-            OptionsEntity optionEntity;
+            String optName = processedOpt.getName();
+            String normOptName = optName != null ? optName.trim().toLowerCase() : "";
 
-            if (processedOpt.getId() != null && existingOptMap.containsKey(processedOpt.getId())) {
-                optionEntity = existingOptMap.get(processedOpt.getId());
-            } else {
+            OptionsEntity optionEntity = null;
+
+            if (processedOpt.getId() != null && existingOptById.containsKey(processedOpt.getId())) {
+                optionEntity = existingOptById.get(processedOpt.getId());
+            } else if (!normOptName.isEmpty() && existingOptByName.containsKey(normOptName)) {
+                optionEntity = existingOptByName.get(normOptName);
+            }
+
+            if (optionEntity == null) {
                 optionEntity = new OptionsEntity();
                 optionEntity.setTierEntity(tierEntity);
                 tierEntity.getOptions().add(optionEntity);
             }
 
-            optionEntity.setName(processedOpt.getName());
+            optionEntity.setName(optName);
 
-            String key = processedTier.getName() + ":" + processedOpt.getName();
+            if (optionEntity.getId() != null) {
+                usedOptIds.add(optionEntity.getId());
+            }
+
+            // Key chuẩn hóa lowercase để khớp với processOptionImages / validateImages
+            String tierKeyName = processedTier.getName() != null ? processedTier.getName().trim().toLowerCase() : "";
+            String optKeyName = processedOpt.getName() != null ? processedOpt.getName().trim().toLowerCase() : "";
+            String key = tierKeyName + ":" + optKeyName;
             mapOptionsEntities.put(key, optionEntity);
+        }
+
+        // Soft delete các option không còn trong payload (theo id)
+        for (OptionsEntity opt : existingOptions) {
+            if (opt.getId() != null && !usedOptIds.contains(opt.getId())) {
+                opt.softDelete();
+            }
         }
     }
 
@@ -837,22 +1221,30 @@ public class ProductServicesImpl implements ProductServices {
         }
 
         mapOptionsEntities.forEach((key, optionEntity) -> {
-            if (optionEntity.getTierEntity().getHasImages()) {
-
-                if (reqOptionImageKeys.contains(key)) {
-                    ProductOptionImageDto imgDto = req.getOptionImages().stream()
-                            .filter(dto -> (dto.getTierName().toLowerCase() + ":" + dto.getOptionName().toLowerCase()).equals(key))
-                            .findFirst().get();
-
-                    MultipartFile file = mapImages.get(imgDto.getImageName());
-                    if (file != null) {
-                        String savedImgPath = filesStorageService.transferStorage(file, FolderTypeEnum.PRODUCTS);
-                        optionEntity.setImgPath(savedImgPath);
-                    }
-                } else {
-                    optionEntity.setImgPath(null);
-                }
+            if (!optionEntity.getTierEntity().getHasImages()) {
+                return;
             }
+
+            if (!reqOptionImageKeys.contains(key)) {
+                // Option không còn trong payload => xoá ảnh nếu đang có
+                optionEntity.setImgPath(null);
+                return;
+            }
+
+            ProductOptionImageDto imgDto = req.getOptionImages().stream()
+                    .filter(dto -> (dto.getTierName().toLowerCase() + ":" + dto.getOptionName().toLowerCase()).equals(key))
+                    .findFirst()
+                    .orElse(null);
+            if (imgDto == null) {
+                return;
+            }
+
+            MultipartFile file = mapImages.get(imgDto.getImageName());
+            if (file != null) {
+                String savedImgPath = filesStorageService.transferStorage(file, FolderTypeEnum.PRODUCTS);
+                optionEntity.setImgPath(savedImgPath);
+            }
+            // Nếu không có file (imageName rỗng), giữ nguyên imgPath hiện tại.
         });
     }
 
@@ -1084,5 +1476,85 @@ public class ProductServicesImpl implements ProductServices {
                 throw new RuntimeException("Tổ hợp biến thể bị trùng lặp.");
             }
         }
+    }
+
+    @Override
+    @Transactional
+    public void deleteMyProduct(Long accountId, Long productId) {
+        if (accountId == null || productId == null) {
+            throw new BusinessException("Thiếu thông tin tài khoản hoặc sản phẩm", HttpStatus.BAD_REQUEST);
+        }
+
+        ShopEntity shop = shopRepo.findByAccountEntity_IdAndDeletedAtIsNull(accountId)
+                .orElseThrow(() -> new BusinessException("Tài khoản chưa có shop", HttpStatus.BAD_REQUEST));
+
+        ProductEntity product = productRepo.findByIdAndShopEntity_IdAndDeletedAtIsNull(productId, shop.getId())
+                .orElseThrow(() -> new BusinessException("Sản phẩm không tồn tại hoặc không thuộc shop của bạn", HttpStatus.NOT_FOUND));
+
+        if (product.getDeletedAt() != null) {
+            // Đã bị xóa mềm trước đó → coi như idempotent
+            return;
+        }
+
+        product.softDelete();
+
+        if (product.getVariations() != null) {
+            for (VariationEntity variation : product.getVariations()) {
+                if (variation.getDeletedAt() == null) {
+                    variation.softDelete();
+                }
+                if (variation.getVariationOptions() != null) {
+                    variation.getVariationOptions().forEach(BaseEntity::softDelete);
+                }
+            }
+        }
+
+        if (product.getTiers() != null) {
+            for (TierEntity tier : product.getTiers()) {
+                if (tier.getDeletedAt() == null) {
+                    tier.softDelete();
+                }
+                if (tier.getOptions() != null) {
+                    tier.getOptions().forEach(BaseEntity::softDelete);
+                }
+            }
+        }
+
+        if (product.getProductImages() != null) {
+            product.getProductImages().forEach(BaseEntity::softDelete);
+        }
+
+        if (product.getProductAttributes() != null) {
+            product.getProductAttributes().forEach(BaseEntity::softDelete);
+        }
+
+        productRepo.save(product);
+    }
+
+    @Override
+    @Transactional
+    public void updateMyProductStatus(Long accountId, Long productId, String status) {
+        if (accountId == null || productId == null) {
+            throw new BusinessException("Thiếu thông tin tài khoản hoặc sản phẩm", HttpStatus.BAD_REQUEST);
+        }
+        if (status == null || status.isBlank()) {
+            throw new BusinessException("Trạng thái sản phẩm là bắt buộc", HttpStatus.BAD_REQUEST);
+        }
+
+        StatusEnums newStatus;
+        try {
+            newStatus = StatusEnums.valueOf(status.trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new BusinessException("Trạng thái sản phẩm không hợp lệ", HttpStatus.BAD_REQUEST);
+        }
+
+        ShopEntity shop = shopRepo.findByAccountEntity_IdAndDeletedAtIsNull(accountId)
+                .orElseThrow(() -> new BusinessException("Tài khoản chưa có shop", HttpStatus.BAD_REQUEST));
+
+        ProductEntity product = productRepo.findByIdAndShopEntity_IdAndDeletedAtIsNull(productId, shop.getId())
+                .orElseThrow(() -> new BusinessException("Sản phẩm không tồn tại hoặc không thuộc shop của bạn", HttpStatus.NOT_FOUND));
+
+        product.setStatus(newStatus);
+        productRepo.save(product);
     }
 }

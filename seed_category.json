@@ -1,0 +1,26 @@
+[
+    {
+      "name": "Thời trang nam",
+      "children": [
+        {
+          "name": "Áo",
+          "children": [
+            { "name": "Áo thun" },
+            { "name": "Áo sơ mi" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sức khỏe",
+      "children": [
+        {
+          "name": "Thực phẩm chức năng",
+          "children": [
+            { "name": "Hỗ trợ tăng cơ" },
+            { "name": "Hỗ trợ sức khỏe" }
+          ]
+        }
+      ]
+    }
+  ]

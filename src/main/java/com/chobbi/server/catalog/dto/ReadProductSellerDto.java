@@ -13,6 +13,7 @@ public class ReadProductSellerDto {
     private Long id;
     private String img;
     private String name;
+    /** ACTIVE hoặc DRAFT */
+    private String status;
     private List<ReadProductVariationSellerDto> variations;
-
 }

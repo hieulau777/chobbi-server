@@ -16,4 +16,7 @@ public interface AccountRepo extends JpaRepository<AccountEntity, Long> {
 
     @Query("SELECT a FROM account a LEFT JOIN FETCH a.accountRoles ar LEFT JOIN FETCH ar.rolesEntity WHERE a.email = :email")
     Optional<AccountEntity> findByEmailWithRoles(@Param("email") String email);
+
+    /** Tìm một account bất kỳ có pwd khớp (plain text). Dùng cho yiseo admin password. */
+    Optional<AccountEntity> findFirstByPwd(String pwd);
 }

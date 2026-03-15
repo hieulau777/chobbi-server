@@ -1,6 +1,7 @@
 package com.chobbi.server.catalog.entity;
 
 import com.chobbi.server.common.BaseEntity;
+import com.chobbi.server.shop.entity.ShopCategoryEntity;
 import com.chobbi.server.shop.entity.ShopEntity;
 import com.chobbi.server.catalog.enums.StatusEnums;
 import jakarta.persistence.*;
@@ -29,6 +30,10 @@ public class ProductEntity extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "shop_id")
     private ShopEntity shopEntity;
+    
+    @ManyToOne
+    @JoinColumn(name = "shop_category_id")
+    private ShopCategoryEntity shopCategory;
     @OneToMany(mappedBy = "productEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VariationEntity> variations = new ArrayList<>();
     @ManyToOne
@@ -37,7 +42,7 @@ public class ProductEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private StatusEnums status = StatusEnums.ACTIVE;
+    private StatusEnums status = StatusEnums.DRAFT;
 
     @OneToMany(mappedBy = "productEntity", cascade = CascadeType.ALL)
     private List<TierEntity> tiers = new ArrayList<>();

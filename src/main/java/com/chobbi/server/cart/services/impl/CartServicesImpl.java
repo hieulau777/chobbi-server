@@ -6,6 +6,8 @@ import com.chobbi.server.cart.dto.AddCartRequest;
 import com.chobbi.server.cart.dto.CartItemDto;
 import com.chobbi.server.cart.dto.CartShopGroupDto;
 import com.chobbi.server.cart.dto.GetCartResponseDto;
+import com.chobbi.server.cart.dto.MiniCartItemDto;
+import com.chobbi.server.cart.dto.MiniCartResponseDto;
 import com.chobbi.server.cart.dto.VariationOptionDisplayDto;
 import com.chobbi.server.cart.entity.CartEntity;
 import com.chobbi.server.cart.entity.CartVariationEntity;
@@ -21,6 +23,7 @@ import com.chobbi.server.shipping.dto.ShopProductIdsRequest;
 import com.chobbi.server.shipping.dto.ShopShippingOptionsDto;
 import com.chobbi.server.shipping.services.ShippingEstimateService;
 import com.chobbi.server.shop.entity.ShopEntity;
+import com.chobbi.server.catalog.enums.StatusEnums;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -121,6 +124,11 @@ public class CartServicesImpl implements CartServices {
             Long productWeight = v.getProductEntity().getWeight() != null
                     ? v.getProductEntity().getWeight().longValue()
                     : 0L;
+
+            boolean productDeleted = v.getProductEntity().getDeletedAt() != null;
+            boolean variationDeleted = v.getDeletedAt() != null;
+            boolean productInactive = v.getProductEntity().getStatus() != StatusEnums.ACTIVE;
+
             CartItemDto item = new CartItemDto();
             item.setCartVariationId(cv.getId());
             item.setVariationId(v.getId());
@@ -128,9 +136,14 @@ public class CartServicesImpl implements CartServices {
             item.setProductName(v.getProductEntity().getName());
             item.setImageUrl(v.getProductEntity().getThumbnail());
             item.setQuantity(cv.getQuantity());
-            item.setPrice(v.getPrice());
+            // Nếu sản phẩm/biến thể đã xóa hoặc ngừng bán, vẫn hiển thị giá đã lưu trong giỏ,
+            // nhưng item sẽ bị disabled nên không tham gia thanh toán.
+            item.setPrice(variationDeleted || productDeleted || productInactive
+                    ? cv.getPriceAtTime()
+                    : v.getPrice());
             item.setWeight(productWeight);
             item.setVariationOptions(options);
+            item.setDisabled(productDeleted || variationDeleted || productInactive);
 
             shopMap.computeIfAbsent(shop.getId(), id -> new CartShopGroupDto(shop.getId(), shop.getName(), new ArrayList<>(), new ArrayList<>()))
                     .getItems()
@@ -158,5 +171,58 @@ public class CartServicesImpl implements CartServices {
             }
         }
         return new GetCartResponseDto(shopGroups);
+    }
+
+    @Override
+    public MiniCartResponseDto getMiniCartByAccountId(Long accountId) {
+        List<CartVariationEntity> items = cartVariationRepo.findByAccountIdWithDetails(accountId);
+        if (items.isEmpty()) {
+            return new MiniCartResponseDto(List.of(), 0);
+        }
+        // Chỉ đếm và hiển thị những item có product còn hoạt động
+        List<CartVariationEntity> activeItems = items.stream()
+                .filter(cv -> {
+                    VariationEntity v = cv.getVariationEntity();
+                    if (v == null || v.getProductEntity() == null) return false;
+                    return v.getDeletedAt() == null
+                            && v.getProductEntity().getDeletedAt() == null
+                            && v.getProductEntity().getStatus() == StatusEnums.ACTIVE;
+                })
+                .toList();
+
+        int totalItems = activeItems.size();
+        List<MiniCartItemDto> miniItems = activeItems.stream()
+                .limit(3)
+                .map(cv -> {
+                    VariationEntity v = cv.getVariationEntity();
+                    if (v == null || v.getProductEntity() == null) {
+                        return null;
+                    }
+                    return new MiniCartItemDto(
+                            v.getProductEntity().getId(),
+                            v.getProductEntity().getName(),
+                            v.getProductEntity().getThumbnail(),
+                            v.getPrice()
+                    );
+                })
+                .filter(i -> i != null)
+                .toList();
+        return new MiniCartResponseDto(miniItems, totalItems);
+    }
+
+    @Override
+    public void removeCartItem(Long accountId, Long cartVariationId) {
+        CartVariationEntity item = cartVariationRepo.findById(cartVariationId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        CartEntity cart = item.getCartEntity();
+        if (cart == null || cart.getAccountEntity() == null
+                || !cart.getAccountEntity().getId().equals(accountId)) {
+            throw new RuntimeException("Cart item does not belong to current account");
+        }
+
+        // Soft delete thông qua BaseEntity (deletedAt)
+        item.softDelete();
+        cartVariationRepo.save(item);
     }
 }

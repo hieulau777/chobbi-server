@@ -22,6 +22,20 @@ public interface OrderRepo extends JpaRepository<OrderEntity, Long> {
     List<OrderEntity> findByShopIdAndStatusWithDetails(@Param("shopId") Long shopId,
                                                        @Param("status") String status);
 
+    @Query("SELECT DISTINCT o FROM orders o " +
+            "LEFT JOIN FETCH o.orderGroupEntity og " +
+            "LEFT JOIN FETCH og.accountEntity acc " +
+            "LEFT JOIN FETCH o.shopEntity s " +
+            "LEFT JOIN FETCH o.shippingEntity sh " +
+            "LEFT JOIN FETCH o.orderVariations ov " +
+            "LEFT JOIN FETCH ov.variationEntity v " +
+            "LEFT JOIN FETCH v.productEntity p " +
+            "WHERE og.accountEntity.id = :accountId " +
+            "AND og.deletedAt IS NULL " +
+            "AND o.deletedAt IS NULL " +
+            "ORDER BY og.createdAt DESC, o.createdAt DESC")
+    List<OrderEntity> findByAccountIdWithDetails(@Param("accountId") Long accountId);
+
     @Query("SELECT o FROM orders o " +
             "JOIN FETCH o.shopEntity s " +
             "JOIN FETCH s.accountEntity sa " +

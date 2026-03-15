@@ -84,8 +84,10 @@ public class CategoryServicesImpl implements CategoryServices {
     public List<ReadProductAttributes> getAttributes(Long categoryId) {
         CategoryEntity category = getLeafCategoryOrThrow(categoryId);
         return category.getAttributes().stream()
+                .filter(attr -> !attr.isDeleted())
                 .map(attr -> {
                     List<ReadProductAttributeValueDto> valueDtos = attr.getAttributeValues().stream()
+                            .filter(val -> !val.isDeleted())
                             .filter(val -> !val.getIsCustom())
                             .map(val -> {
                                 String displayValue = switch (attr.getType()) {

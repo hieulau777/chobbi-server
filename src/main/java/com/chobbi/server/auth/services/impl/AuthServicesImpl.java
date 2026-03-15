@@ -14,8 +14,11 @@ import com.chobbi.server.auth.dto.LoginResponse;
 import com.chobbi.server.auth.dto.ProviderLoginRequest;
 import com.chobbi.server.auth.dto.SignUpRequest;
 import com.chobbi.server.auth.services.AuthServices;
+import com.chobbi.server.auth.services.EmailBlacklistService;
 import com.chobbi.server.shop.repo.ShopRepo;
 import lombok.RequiredArgsConstructor;
+import com.chobbi.server.exception.BusinessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +35,7 @@ public class AuthServicesImpl implements AuthServices {
     private final AccountRolesRepo accountRolesRepo;
     private final ShopRepo shopRepo;
     private final JwtService jwtService;
+    private final EmailBlacklistService emailBlacklistService;
 
     @Override
     public void createAccount(SignUpRequest req) {
@@ -40,6 +44,9 @@ public class AuthServicesImpl implements AuthServices {
 
     @Override
     public LoginResponse loginAsBuyer(ProviderLoginRequest req) {
+        if (emailBlacklistService.isBlacklisted(req.getEmail())) {
+            throw new BusinessException("Tài khoản của bạn đã bị khóa.", HttpStatus.FORBIDDEN);
+        }
         Optional<SocialAccountEntity> existingSocialAccount = socialAccountRepo
                 .findByProviderAndProviderAccountId(req.getProvider(), req.getProviderAccountId());
 
@@ -79,6 +86,9 @@ public class AuthServicesImpl implements AuthServices {
 
     @Override
     public LoginResponse loginAsSeller(ProviderLoginRequest req) {
+        if (emailBlacklistService.isBlacklisted(req.getEmail())) {
+            throw new BusinessException("Tài khoản của bạn đã bị khóa.", HttpStatus.FORBIDDEN);
+        }
         Optional<SocialAccountEntity> existingSocialAccount = socialAccountRepo
                 .findByProviderAndProviderAccountId(req.getProvider(), req.getProviderAccountId());
 

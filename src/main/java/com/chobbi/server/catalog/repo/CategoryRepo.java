@@ -12,6 +12,20 @@ public interface CategoryRepo extends JpaRepository<CategoryEntity, Long> {
 
     boolean existsByParentId(Long id);
 
+    /**
+     * Kiểm tra trùng tên cho root category (parent IS NULL).
+     */
+    boolean existsByNameIgnoreCaseAndParentIsNullAndDeletedAtIsNull(String name);
+
+    boolean existsByNameIgnoreCaseAndParentIsNullAndDeletedAtIsNullAndIdNot(String name, Long id);
+
+    /**
+     * Kiểm tra trùng tên cho category con trong cùng một parent (children of same root/parent).
+     */
+    boolean existsByNameIgnoreCaseAndParent_IdAndDeletedAtIsNull(String name, Long parentId);
+
+    boolean existsByNameIgnoreCaseAndParent_IdAndDeletedAtIsNullAndIdNot(String name, Long parentId, Long id);
+
     @Query("SELECT c FROM category c WHERE c.deletedAt IS NULL AND NOT EXISTS (SELECT ch FROM category ch WHERE ch.parent = c AND ch.deletedAt IS NULL)")
     List<CategoryEntity> findAllLeafCategories();
 

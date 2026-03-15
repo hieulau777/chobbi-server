@@ -5,6 +5,7 @@ import com.chobbi.server.exception.BusinessException;
 import com.chobbi.server.order.dto.OrderRequest;
 import com.chobbi.server.order.dto.PlaceOrderResponse;
 import com.chobbi.server.order.dto.ShopOrderDto;
+import com.chobbi.server.order.dto.MyOrderDto;
 import com.chobbi.server.order.services.OrderServices;
 import com.chobbi.server.shop.entity.ShopEntity;
 import com.chobbi.server.shop.repo.ShopRepo;
@@ -60,5 +61,20 @@ public class OrderController {
             @RequestBody List<Long> orderIds) {
         orderServices.cancelOrders(principal.getAccountId(), orderIds);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Lấy danh sách đơn hàng của tài khoản mua hàng đang đăng nhập.
+     *
+     * 1 order group có thể có 1 hoặc nhiều shop, mỗi shop có 1 hoặc nhiều sản phẩm đã đặt,
+     * kèm thông tin product + variation (tên combination) để hiển thị.
+     */
+    @GetMapping("/my")
+    public ResponseEntity<List<MyOrderDto>> getMyOrders(
+            @AuthenticationPrincipal AccountPrincipal principal,
+            @RequestParam(name = "status", required = false) String status
+    ) {
+        List<MyOrderDto> orders = orderServices.getOrdersOfAccount(principal.getAccountId(), status);
+        return ResponseEntity.ok(orders);
     }
 }
