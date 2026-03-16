@@ -2,6 +2,7 @@ package com.chobbi.server.catalog.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -16,7 +17,10 @@ import java.util.List;
 @NoArgsConstructor
 public class CreateProductRequest {
     private Long shopId;
+    @NotBlank(message = "Tên sản phẩm là bắt buộc")
+    @Size(max = 120, message = "Tên sản phẩm tối đa 120 ký tự")
     private String name;
+    @Size(max = 3000, message = "Mô tả sản phẩm tối đa 3000 ký tự")
     private String description;
     private Long categoryId;
 

@@ -1,5 +1,6 @@
 package com.chobbi.server.catalog.dto;
 
+import com.chobbi.server.catalog.enums.StatusEnums;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,14 +15,16 @@ import java.util.List;
 @NoArgsConstructor
 public class ProductRequest {
     private Long shopId;
-    private Long productId; // Bắt buộc để tìm sản phẩm [10, 11]
+    private Long productId;
     /** ACTIVE hoặc DRAFT. Khi tạo/update: front gửi lên để lưu trạng thái. */
-    private String status;
+    private StatusEnums status;
     @NotNull
     private Long categoryId; // Để check case đổi category [10, 12]
-    @NotBlank
+    @NotBlank(message = "Tên sản phẩm là bắt buộc")
+    @jakarta.validation.constraints.Size(max = 120, message = "Tên sản phẩm tối đa 120 ký tự")
     private String name;
-    @NotBlank
+    @NotBlank(message = "Mô tả sản phẩm là bắt buộc")
+    @jakarta.validation.constraints.Size(max = 3000, message = "Mô tả sản phẩm tối đa 3000 ký tự")
     private String description;
 
     @NotNull(message = "Trọng lượng sản phẩm là bắt buộc")
