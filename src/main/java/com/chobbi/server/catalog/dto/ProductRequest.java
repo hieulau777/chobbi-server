@@ -17,7 +17,7 @@ public class ProductRequest {
     private Long shopId;
     private Long productId;
     /** ACTIVE hoặc DRAFT. Khi tạo/update: front gửi lên để lưu trạng thái. */
-    private StatusEnums status;
+    private String status;
     @NotNull
     private Long categoryId; // Để check case đổi category [10, 12]
     @NotBlank(message = "Tên sản phẩm là bắt buộc")
