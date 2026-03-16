@@ -21,6 +21,7 @@ import com.chobbi.server.catalog.entity.ProductImagesEntity;
 import com.chobbi.server.catalog.entity.TierEntity;
 import com.chobbi.server.catalog.entity.VariationEntity;
 import com.chobbi.server.catalog.entity.VariationOptionEntity;
+import com.chobbi.server.catalog.enums.AttributeTypesEnums;
 import com.chobbi.server.catalog.enums.StatusEnums;
 import com.chobbi.server.catalog.repo.AttributeValuesRepo;
 import com.chobbi.server.catalog.repo.AttributesRepo;
@@ -260,12 +261,24 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
             throw new IllegalArgumentException("Attributes can only be attached to leaf categories.");
         }
 
+        AttributeTypesEnums type = request.getType() != null
+                ? request.getType()
+                : AttributeTypesEnums.TEXT;
+        boolean isRequired = Boolean.TRUE.equals(request.getIsRequired());
+        boolean isCustomAllow = Boolean.TRUE.equals(request.getIsCustomAllow());
+        boolean isMultipleAllow = Boolean.TRUE.equals(request.getIsMultipleAllow());
+
+        if (type == AttributeTypesEnums.BOOLEAN || type == AttributeTypesEnums.DATE) {
+            isCustomAllow = false;
+            isMultipleAllow = false;
+        }
+
         AttributesEntity attr = new AttributesEntity();
         attr.setName(request.getName());
-        attr.setIsRequired(request.getIsRequired());
-        attr.setIsCustomAllow(request.getIsCustomAllow());
-        attr.setIsMultipleAllow(request.getIsMultipleAllow());
-        attr.setType(request.getType());
+        attr.setIsRequired(isRequired);
+        attr.setIsCustomAllow(isCustomAllow);
+        attr.setIsMultipleAllow(isMultipleAllow);
+        attr.setType(type);
         attr.setCategoryEntity(category);
 
         AttributesEntity saved = attributesRepo.save(attr);
@@ -327,18 +340,34 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
             }
 
             for (AdminAttributeSeedRequest.AttributeWithValues attrSeed : request.getAttributes()) {
+                AttributeTypesEnums type = attrSeed.getType() != null
+                        ? attrSeed.getType()
+                        : AttributeTypesEnums.TEXT;
+                boolean isRequired = Boolean.TRUE.equals(attrSeed.getIsRequired());
+                boolean isCustomAllow = Boolean.TRUE.equals(attrSeed.getIsCustomAllow());
+                boolean isMultipleAllow = Boolean.TRUE.equals(attrSeed.getIsMultipleAllow());
+
+                if (type == AttributeTypesEnums.BOOLEAN || type == AttributeTypesEnums.DATE) {
+                    isCustomAllow = false;
+                    isMultipleAllow = false;
+                }
+
                 AttributesEntity attr = new AttributesEntity();
                 attr.setName(attrSeed.getName());
-                attr.setIsRequired(attrSeed.getIsRequired());
-                attr.setIsCustomAllow(attrSeed.getIsCustomAllow());
-                attr.setIsMultipleAllow(attrSeed.getIsMultipleAllow());
-                attr.setType(attrSeed.getType());
+                attr.setIsRequired(isRequired);
+                attr.setIsCustomAllow(isCustomAllow);
+                attr.setIsMultipleAllow(isMultipleAllow);
+                attr.setType(type);
                 attr.setCategoryEntity(category);
 
                 AttributesEntity savedAttr = attributesRepo.save(attr);
                 allCreated.add(toAttributeResponse(savedAttr));
 
-                if (attrSeed.getValues() != null) {
+                boolean disallowValues = type == AttributeTypesEnums.BOOLEAN
+                        || type == AttributeTypesEnums.DATE
+                        || isCustomAllow;
+
+                if (!disallowValues && attrSeed.getValues() != null) {
                     for (AdminAttributeSeedRequest.AttributeValueSeed valSeed : attrSeed.getValues()) {
                         AttributeValuesEntity value = new AttributeValuesEntity();
                         value.setIsCustom(valSeed.getIsCustom());
@@ -529,11 +558,31 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
         AttributesEntity attr = attributesRepo.findById(attributeId)
                 .orElseThrow(() -> new IllegalArgumentException("Attribute not found with id: " + attributeId));
 
+        AttributeTypesEnums incomingType = request.getType() != null
+                ? request.getType()
+                : attr.getType();
+
+        AttributeTypesEnums type = incomingType != null ? incomingType : AttributeTypesEnums.TEXT;
+        boolean isRequired = request.getIsRequired() != null
+                ? Boolean.TRUE.equals(request.getIsRequired())
+                : Boolean.TRUE.equals(attr.getIsRequired());
+        boolean isCustomAllow = request.getIsCustomAllow() != null
+                ? Boolean.TRUE.equals(request.getIsCustomAllow())
+                : Boolean.TRUE.equals(attr.getIsCustomAllow());
+        boolean isMultipleAllow = request.getIsMultipleAllow() != null
+                ? Boolean.TRUE.equals(request.getIsMultipleAllow())
+                : Boolean.TRUE.equals(attr.getIsMultipleAllow());
+
+        if (type == AttributeTypesEnums.BOOLEAN || type == AttributeTypesEnums.DATE) {
+            isCustomAllow = false;
+            isMultipleAllow = false;
+        }
+
         attr.setName(request.getName());
-        attr.setIsRequired(request.getIsRequired());
-        attr.setIsCustomAllow(request.getIsCustomAllow());
-        attr.setIsMultipleAllow(request.getIsMultipleAllow());
-        attr.setType(request.getType());
+        attr.setIsRequired(isRequired);
+        attr.setIsCustomAllow(isCustomAllow);
+        attr.setIsMultipleAllow(isMultipleAllow);
+        attr.setType(type);
 
         AttributesEntity saved = attributesRepo.save(attr);
         return toAttributeResponse(saved);
@@ -579,6 +628,12 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
         AttributesEntity attr = attributesRepo.findById(attributeId)
                 .orElseThrow(() -> new IllegalArgumentException("Attribute not found with id: " + attributeId));
 
+        if (attr.getType() == AttributeTypesEnums.BOOLEAN
+                || attr.getType() == AttributeTypesEnums.DATE
+                || Boolean.TRUE.equals(attr.getIsCustomAllow())) {
+            throw new IllegalArgumentException("Cannot create attribute values for BOOLEAN/DATE or custom-only attributes. Values belong to user.");
+        }
+
         AttributeValuesEntity value = new AttributeValuesEntity();
         value.setIsCustom(request.getIsCustom());
         value.setValueText(request.getValueText());
@@ -595,6 +650,12 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
     public AdminAttributeValueResponse updateAttributeValue(Long id, AdminAttributeValueRequest request) {
         AttributeValuesEntity value = attributeValuesRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Attribute value not found with id: " + id));
+        AttributesEntity attr = value.getAttributesEntity();
+        if (attr != null && (attr.getType() == AttributeTypesEnums.BOOLEAN
+                || attr.getType() == AttributeTypesEnums.DATE
+                || Boolean.TRUE.equals(attr.getIsCustomAllow()))) {
+            throw new IllegalArgumentException("Cannot update attribute values for BOOLEAN/DATE or custom-only attributes.");
+        }
 
         value.setIsCustom(request.getIsCustom());
         value.setValueText(request.getValueText());
