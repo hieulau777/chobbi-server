@@ -268,8 +268,11 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
         boolean isCustomAllow = Boolean.TRUE.equals(request.getIsCustomAllow());
         boolean isMultipleAllow = Boolean.TRUE.equals(request.getIsMultipleAllow());
 
-        if (type == AttributeTypesEnums.BOOLEAN || type == AttributeTypesEnums.DATE) {
+        if (type == AttributeTypesEnums.BOOLEAN) {
             isCustomAllow = false;
+            isMultipleAllow = false;
+        } else if (type == AttributeTypesEnums.DATE) {
+            isCustomAllow = true;
             isMultipleAllow = false;
         }
 
@@ -347,8 +350,11 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
                 boolean isCustomAllow = Boolean.TRUE.equals(attrSeed.getIsCustomAllow());
                 boolean isMultipleAllow = Boolean.TRUE.equals(attrSeed.getIsMultipleAllow());
 
-                if (type == AttributeTypesEnums.BOOLEAN || type == AttributeTypesEnums.DATE) {
+                if (type == AttributeTypesEnums.BOOLEAN) {
                     isCustomAllow = false;
+                    isMultipleAllow = false;
+                } else if (type == AttributeTypesEnums.DATE) {
+                    isCustomAllow = true;
                     isMultipleAllow = false;
                 }
 
@@ -573,8 +579,11 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
                 ? Boolean.TRUE.equals(request.getIsMultipleAllow())
                 : Boolean.TRUE.equals(attr.getIsMultipleAllow());
 
-        if (type == AttributeTypesEnums.BOOLEAN || type == AttributeTypesEnums.DATE) {
+        if (type == AttributeTypesEnums.BOOLEAN) {
             isCustomAllow = false;
+            isMultipleAllow = false;
+        } else if (type == AttributeTypesEnums.DATE) {
+            isCustomAllow = true;
             isMultipleAllow = false;
         }
 
