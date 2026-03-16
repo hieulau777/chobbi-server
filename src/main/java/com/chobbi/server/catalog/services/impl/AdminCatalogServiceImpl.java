@@ -370,8 +370,7 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
                 allCreated.add(toAttributeResponse(savedAttr));
 
                 boolean disallowValues = type == AttributeTypesEnums.BOOLEAN
-                        || type == AttributeTypesEnums.DATE
-                        || isCustomAllow;
+                        || type == AttributeTypesEnums.DATE;
 
                 if (!disallowValues && attrSeed.getValues() != null) {
                     for (AdminAttributeSeedRequest.AttributeValueSeed valSeed : attrSeed.getValues()) {
@@ -638,9 +637,8 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
                 .orElseThrow(() -> new IllegalArgumentException("Attribute not found with id: " + attributeId));
 
         if (attr.getType() == AttributeTypesEnums.BOOLEAN
-                || attr.getType() == AttributeTypesEnums.DATE
-                || Boolean.TRUE.equals(attr.getIsCustomAllow())) {
-            throw new IllegalArgumentException("Cannot create attribute values for BOOLEAN/DATE or custom-only attributes. Values belong to user.");
+                || attr.getType() == AttributeTypesEnums.DATE) {
+            throw new IllegalArgumentException("Cannot create attribute values for BOOLEAN/DATE attributes. Values belong to user.");
         }
 
         AttributeValuesEntity value = new AttributeValuesEntity();
@@ -661,9 +659,8 @@ public class AdminCatalogServiceImpl implements AdminCatalogService {
                 .orElseThrow(() -> new IllegalArgumentException("Attribute value not found with id: " + id));
         AttributesEntity attr = value.getAttributesEntity();
         if (attr != null && (attr.getType() == AttributeTypesEnums.BOOLEAN
-                || attr.getType() == AttributeTypesEnums.DATE
-                || Boolean.TRUE.equals(attr.getIsCustomAllow()))) {
-            throw new IllegalArgumentException("Cannot update attribute values for BOOLEAN/DATE or custom-only attributes.");
+                || attr.getType() == AttributeTypesEnums.DATE)) {
+            throw new IllegalArgumentException("Cannot update attribute values for BOOLEAN/DATE attributes.");
         }
 
         value.setIsCustom(request.getIsCustom());
