@@ -391,6 +391,9 @@ public class OrderServicesImpl implements OrderServices {
 
         return groupMap.values().stream()
                 .filter(g -> g.getShops() != null && !g.getShops().isEmpty())
+                // Ensure "latest order" sorting for the buyer's order list.
+                .sorted(Comparator.comparing(MyOrderDto::getCreatedAt,
+                        Comparator.nullsLast(Comparator.naturalOrder())).reversed())
                 .toList();
     }
 
